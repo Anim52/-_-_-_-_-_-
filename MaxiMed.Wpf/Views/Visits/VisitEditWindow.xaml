@@ -1,0 +1,474 @@
+﻿<Window x:Class="MaxiMed.Wpf.Views.Visits.VisitEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MaxiMed.Wpf.Views.Visits"
+        mc:Ignorable="d"
+        Title="Карта приёма"
+        Height="760"
+        Width="980"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="#F5F7FB"
+        FontFamily="Segoe UI"
+        TextElement.FontSize="13"
+        SnapsToDevicePixels="True"
+        Icon="/Resources/Image/Image.ico">
+
+    <Window.Resources>
+        <!-- Цвета -->
+        <Color x:Key="C_Primary">#2563EB</Color>
+        <Color x:Key="C_PrimaryDark">#1D4ED8</Color>
+        <Color x:Key="C_Text">#0F172A</Color>
+        <Color x:Key="C_SubText">#64748B</Color>
+        <Color x:Key="C_Border">#E2E8F0</Color>
+        <Color x:Key="C_Danger">#DC2626</Color>
+
+        <SolidColorBrush x:Key="B_Primary" Color="{StaticResource C_Primary}"/>
+        <SolidColorBrush x:Key="B_PrimaryDark" Color="{StaticResource C_PrimaryDark}"/>
+        <SolidColorBrush x:Key="B_Text" Color="{StaticResource C_Text}"/>
+        <SolidColorBrush x:Key="B_SubText" Color="{StaticResource C_SubText}"/>
+        <SolidColorBrush x:Key="B_Border" Color="{StaticResource C_Border}"/>
+        <SolidColorBrush x:Key="B_Danger" Color="{StaticResource C_Danger}"/>
+
+        <DropShadowEffect x:Key="E_CardShadow" BlurRadius="26" ShadowDepth="8" Opacity="0.12"/>
+
+        <!-- Карточка -->
+        <Style x:Key="S_Card" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="BorderBrush" Value="#10E2E8F0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Effect" Value="{StaticResource E_CardShadow}"/>
+        </Style>
+
+        <!-- Заголовок секции -->
+        <Style x:Key="S_SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource B_Text}"/>
+        </Style>
+
+        <Style x:Key="S_SectionSub" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{StaticResource B_SubText}"/>
+        </Style>
+
+        <!-- Поля -->
+        <Style x:Key="S_TextBox" TargetType="TextBox">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource B_Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{StaticResource B_Text}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10">
+                            <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource B_Primary}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Многострочный -->
+        <Style x:Key="S_Memo" TargetType="TextBox" BasedOn="{StaticResource S_TextBox}">
+            <Setter Property="Height" Value="110"/>
+            <Setter Property="AcceptsReturn" Value="True"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="VerticalContentAlignment" Value="Top"/>
+        </Style>
+
+        <Style x:Key="S_DatePicker" TargetType="DatePicker">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="6,0"/>
+        </Style>
+
+        <!-- Кнопки -->
+        <Style x:Key="S_ButtonPrimary" TargetType="Button">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="MinWidth" Value="140"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{StaticResource B_Primary}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource B_PrimaryDark}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="S_ButtonSecondary" TargetType="Button">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="Foreground" Value="{StaticResource B_Text}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{StaticResource B_Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#0B000000"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- DataGrid -->
+        <Style x:Key="S_DataGrid" TargetType="DataGrid">
+            <Setter Property="GridLinesVisibility" Value="None"/>
+            <Setter Property="RowHeaderWidth" Value="0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="AlternatingRowBackground" Value="#FBFCFE"/>
+            <Setter Property="RowBackground" Value="White"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+        </Style>
+
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="Foreground" Value="{StaticResource B_SubText}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="BorderBrush" Value="{StaticResource B_Border}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        </Style>
+
+        <Style TargetType="DataGridRow">
+            <Setter Property="MinHeight" Value="40"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="BorderBrush" Value="#0FE2E8F0"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#E8F0FF"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#F1F5FF"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="14"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="14"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Шапка -->
+        <Border Grid.Row="0" Style="{StaticResource S_Card}" Padding="14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="Карта приёма" FontSize="20" FontWeight="Bold" Foreground="{StaticResource B_Text}"/>
+                    <TextBlock Text="Осмотр, диагноз, услуги, назначения и вложения"
+                               FontSize="12" Foreground="{StaticResource B_SubText}" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                    <TextBlock Text="Открыт" Style="{StaticResource S_SectionSub}"/>
+                    <TextBlock Text="{Binding OpenedAt, StringFormat={}{0:dd.MM.yyyy HH:mm}}"
+                               FontWeight="SemiBold" Foreground="{StaticResource B_Text}" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Margin="10,0,0,0">
+                    <TextBlock Text="Закрыт" Style="{StaticResource S_SectionSub}"/>
+                    <DatePicker Style="{StaticResource S_DatePicker}" SelectedDate="{Binding ClosedAt}" Margin="0,6,0,0"/>
+                    <TextBlock Text="Врач (Id)" Style="{StaticResource S_SectionSub}" Margin="0,10,0,0"/>
+                    <TextBox Style="{StaticResource S_TextBox}" Text="{Binding DoctorId}" IsReadOnly="True" Margin="0,6,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Контент -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+
+                <!-- Жалобы -->
+                <Border Style="{StaticResource S_Card}" Padding="14" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Жалобы" Style="{StaticResource S_SectionTitle}"/>
+                        <TextBlock Text="Основные жалобы пациента" Style="{StaticResource S_SectionSub}" Margin="0,2,0,10"/>
+                        <TextBox Style="{StaticResource S_Memo}" Height="120" Text="{Binding Complaints}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Анамнез -->
+                <Border Style="{StaticResource S_Card}" Padding="14" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Анамнез" Style="{StaticResource S_SectionTitle}"/>
+                        <TextBlock Text="История заболевания и сопутствующие сведения" Style="{StaticResource S_SectionSub}" Margin="0,2,0,10"/>
+                        <TextBox Style="{StaticResource S_Memo}" Height="130" Text="{Binding Anamnesis}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Осмотр -->
+                <Border Style="{StaticResource S_Card}" Padding="14" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Осмотр" Style="{StaticResource S_SectionTitle}"/>
+                        <TextBlock Text="Объективные данные осмотра" Style="{StaticResource S_SectionSub}" Margin="0,2,0,10"/>
+                        <TextBox Style="{StaticResource S_Memo}" Height="130" Text="{Binding Examination}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Услуги -->
+                <Border Style="{StaticResource S_Card}" Padding="14" Margin="0,0,0,12">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                            <TextBlock Text="Услуги (в счёт)" Style="{StaticResource S_SectionTitle}"/>
+                            <TextBlock Text="Добавьте услуги, которые попадут в счёт" Style="{StaticResource S_SectionSub}"/>
+                        </StackPanel>
+
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+                            <Button Content="Добавить…"
+                                    Style="{StaticResource S_ButtonPrimary}"
+                                    MinWidth="140"
+                                    Margin="0,0,10,0"
+                                    Command="{Binding AddServiceCommand}"/>
+                            <Button Content="Сохранить строку"
+                                    Style="{StaticResource S_ButtonSecondary}"
+                                    MinWidth="170"
+                                    Margin="0,0,10,0"
+                                    Command="{Binding SaveServiceRowCommand}"/>
+                            <Button Content="Удалить"
+                                    Style="{StaticResource S_ButtonSecondary}"
+                                    MinWidth="120"
+                                    Command="{Binding RemoveServiceCommand}"/>
+                        </StackPanel>
+
+                        <Border BorderBrush="#10E2E8F0" BorderThickness="1" CornerRadius="12" Padding="0">
+                            <DataGrid Style="{StaticResource S_DataGrid}"
+                                      ItemsSource="{Binding Services}"
+                                      SelectedItem="{Binding SelectedServiceItem}"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      IsReadOnly="False"
+                                      Height="200">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Услуга" Binding="{Binding ServiceName}" IsReadOnly="True" Width="*"/>
+                                    <DataGridTextColumn Header="Кол-во" Binding="{Binding Qty}" Width="100"/>
+                                    <DataGridTextColumn Header="Цена" Binding="{Binding Price}" Width="140"/>
+                                    <DataGridTextColumn Header="Сумма" Binding="{Binding Amount}" IsReadOnly="True" Width="140"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+                    </DockPanel>
+                </Border>
+
+                <!-- Диагноз -->
+                <Border Style="{StaticResource S_Card}" Padding="14" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Диагноз (текст)" Style="{StaticResource S_SectionTitle}"/>
+                        <TextBlock Text="Свободное текстовое описание диагноза" Style="{StaticResource S_SectionSub}" Margin="0,2,0,10"/>
+                        <TextBox Style="{StaticResource S_Memo}" Height="110" Text="{Binding DiagnosisText}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Назначения -->
+                <Border Style="{StaticResource S_Card}" Padding="14" Margin="0,0,0,12">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                            <TextBlock Text="Назначения" Style="{StaticResource S_SectionTitle}"/>
+                            <TextBlock Text="Добавьте назначения/рекомендации по лечению" Style="{StaticResource S_SectionSub}"/>
+                        </StackPanel>
+
+                        <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox Grid.Column="0"
+                                     Style="{StaticResource S_TextBox}"
+                                     Text="{Binding NewPrescriptionText, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <Button Grid.Column="2"
+                                    Content="Добавить"
+                                    Style="{StaticResource S_ButtonPrimary}"
+                                    MinWidth="120"
+                                    Command="{Binding AddPrescriptionCommand}"/>
+
+                            <Button Grid.Column="4"
+                                    Content="Удалить"
+                                    Style="{StaticResource S_ButtonSecondary}"
+                                    MinWidth="120"
+                                    Command="{Binding RemovePrescriptionCommand}"/>
+                        </Grid>
+
+                        <Border BorderBrush="#10E2E8F0" BorderThickness="1" CornerRadius="12" Padding="0">
+                            <DataGrid Style="{StaticResource S_DataGrid}"
+                                      ItemsSource="{Binding Prescriptions}"
+                                      SelectedItem="{Binding SelectedPrescription}"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True"
+                                      CanUserAddRows="False"
+                                      Height="200">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Дата" Binding="{Binding CreatedAt, StringFormat={}{0:dd.MM.yyyy HH:mm}}" Width="190"/>
+                                    <DataGridTextColumn Header="Текст" Binding="{Binding Text}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+                    </DockPanel>
+                </Border>
+
+                <!-- Вложения -->
+                <Border Style="{StaticResource S_Card}" Padding="14" Margin="0,0,0,12">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                            <TextBlock Text="Вложения (файлы)" Style="{StaticResource S_SectionTitle}"/>
+                            <TextBlock Text="Файлы обследований, снимки, документы" Style="{StaticResource S_SectionSub}"/>
+                        </StackPanel>
+
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+                            <Button Content="Загрузить файл"
+                                    Style="{StaticResource S_ButtonPrimary}"
+                                    MinWidth="160"
+                                    Margin="0,0,10,0"
+                                    Command="{Binding UploadAttachmentCommand}"/>
+                            <Button Content="Скачать"
+                                    Style="{StaticResource S_ButtonSecondary}"
+                                    MinWidth="120"
+                                    Margin="0,0,10,0"
+                                    Command="{Binding DownloadAttachmentCommand}"/>
+                            <Button Content="Удалить"
+                                    Style="{StaticResource S_ButtonSecondary}"
+                                    MinWidth="120"
+                                    Command="{Binding DeleteAttachmentCommand}"/>
+                        </StackPanel>
+
+                        <Border BorderBrush="#10E2E8F0" BorderThickness="1" CornerRadius="12" Padding="0">
+                            <DataGrid Style="{StaticResource S_DataGrid}"
+                                      ItemsSource="{Binding Attachments}"
+                                      SelectedItem="{Binding SelectedAttachment}"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      IsReadOnly="True"
+                                      Height="200">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Файл" Binding="{Binding FileName}" Width="*"/>
+                                    <DataGridTextColumn Header="Загружен"
+                                                        Binding="{Binding UploadedAt, StringFormat={}{0:dd.MM.yyyy HH:mm}}"
+                                                        Width="200"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+                    </DockPanel>
+                </Border>
+
+                <!-- Рекомендации -->
+                <Border Style="{StaticResource S_Card}" Padding="14" Margin="0,0,0,6">
+                    <StackPanel>
+                        <TextBlock Text="Рекомендации" Style="{StaticResource S_SectionTitle}"/>
+                        <TextBlock Text="Итоговые рекомендации пациенту" Style="{StaticResource S_SectionSub}" Margin="0,2,0,10"/>
+                        <TextBox Style="{StaticResource S_Memo}" Height="150" Text="{Binding Recommendations}"/>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Низ -->
+        <Border Grid.Row="4" Style="{StaticResource S_Card}" Padding="12">
+            <DockPanel>
+                <TextBlock Text="{Binding ErrorText}"
+                           Foreground="{StaticResource B_Danger}"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Center"
+                           Margin="0,0,12,0"/>
+
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="Открыть счёт"
+                            Style="{StaticResource S_ButtonSecondary}"
+                            MinWidth="140"
+                            Margin="0,0,10,0"
+                            Command="{Binding OpenInvoiceCommand}"/>
+
+                    <Button Content="Сохранить"
+                            Style="{StaticResource S_ButtonPrimary}"
+                            Margin="0,0,10,0"
+                            Command="{Binding SaveCommand}"/>
+
+                    <Button Content="Закрыть"
+                            Style="{StaticResource S_ButtonSecondary}"
+                            IsCancel="True"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+    </Grid>
+</Window>

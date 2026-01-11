@@ -1,0 +1,292 @@
+﻿<Window x:Class="MaxiMed.Wpf.Views.Auth.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MaxiMed.Wpf.Views.Auth"
+        mc:Ignorable="d"
+        Title="Вход в MaxiMed"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="#F5F7FB"
+        FontFamily="Segoe UI"
+        TextElement.FontSize="13"
+        SnapsToDevicePixels="True"
+
+        Icon="/Resources/Image/Image.ico">
+
+    <Window.Resources>
+        <!-- Цвета -->
+        <Color x:Key="C_Primary">#2563EB</Color>
+        <Color x:Key="C_PrimaryDark">#1D4ED8</Color>
+        <Color x:Key="C_Text">#0F172A</Color>
+        <Color x:Key="C_SubText">#475569</Color>
+        <Color x:Key="C_Border">#E2E8F0</Color>
+        <Color x:Key="C_FieldBg">#FFFFFF</Color>
+        <Color x:Key="C_Danger">#DC2626</Color>
+
+        <SolidColorBrush x:Key="B_Primary" Color="{StaticResource C_Primary}"/>
+        <SolidColorBrush x:Key="B_PrimaryDark" Color="{StaticResource C_PrimaryDark}"/>
+        <SolidColorBrush x:Key="B_Text" Color="{StaticResource C_Text}"/>
+        <SolidColorBrush x:Key="B_SubText" Color="{StaticResource C_SubText}"/>
+        <SolidColorBrush x:Key="B_Border" Color="{StaticResource C_Border}"/>
+        <SolidColorBrush x:Key="B_FieldBg" Color="{StaticResource C_FieldBg}"/>
+        <SolidColorBrush x:Key="B_Danger" Color="{StaticResource C_Danger}"/>
+
+        <!-- Тень карточки -->
+        <DropShadowEffect x:Key="E_CardShadow"
+                          BlurRadius="28"
+                          ShadowDepth="8"
+                          Opacity="0.18"/>
+
+        <!-- Стиль TextBox -->
+        <Style x:Key="S_TextBox" TargetType="TextBox">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="{StaticResource B_FieldBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource B_Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{StaticResource B_Text}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="0"
+                                          VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource B_Primary}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Стиль PasswordBox -->
+        <Style x:Key="S_PasswordBox" TargetType="PasswordBox">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="{StaticResource B_FieldBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource B_Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{StaticResource B_Text}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="0"
+                                          VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource B_Primary}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Кнопка Primary -->
+        <Style x:Key="S_ButtonPrimary" TargetType="Button">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{StaticResource B_Primary}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource B_PrimaryDark}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Кнопка Secondary -->
+        <Style x:Key="S_ButtonSecondary" TargetType="Button">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="Foreground" Value="{StaticResource B_Text}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{StaticResource B_Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#0B000000"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource B_Text}"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="22">
+        <!-- Карточка -->
+        <Border Width="420"
+                Background="White"
+                CornerRadius="16"
+                Padding="22"
+                Effect="{StaticResource E_CardShadow}"
+                BorderBrush="#10E2E8F0"
+                BorderThickness="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="18"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="14"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Шапка -->
+                <StackPanel Orientation="Horizontal" Grid.Row="0" VerticalAlignment="Center">
+                    <!-- Если сделаешь PNG: положи в /Assets/Brand/logo.png и поставь Build Action: Resource -->
+                    <Border Width="44" Height="44" CornerRadius="12" Background="#EFF6FF" Margin="0,0,12,0">
+                        <Image Stretch="Uniform"
+                               Source="/Resources/Image/Image.png"/>
+                    </Border>
+
+                    <StackPanel>
+                        <TextBlock Text="MaxiMed" FontSize="22" FontWeight="Bold"/>
+                        <TextBlock Text="Система учёта клиники" Foreground="{StaticResource B_SubText}" FontSize="12"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Логин -->
+                <StackPanel Grid.Row="2">
+                    <TextBlock Text="Логин" Foreground="{StaticResource B_SubText}" Margin="0,0,0,6"/>
+                    <TextBox Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource S_TextBox}"/>
+                </StackPanel>
+
+                <!-- Пароль -->
+                <StackPanel Grid.Row="4">
+                    <TextBlock Text="Пароль" Foreground="{StaticResource B_SubText}" Margin="0,0,0,6"/>
+                    <PasswordBox x:Name="Pwd"
+                                 Style="{StaticResource S_PasswordBox}"/>
+                </StackPanel>
+
+                <!-- Ошибка -->
+                <Border Grid.Row="6"
+                        Background="#FEF2F2"
+                        BorderBrush="#FECACA"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="10"
+                        >
+                    <!-- Примечание: Visibility-конвертер тут не подключён.
+                         Если не хочешь конвертер — просто убери Border и оставь TextBlock как было. -->
+                    <TextBlock Text="{Binding ErrorText}"
+                               Foreground="{StaticResource B_Danger}"
+                               TextWrapping="Wrap"/>
+                </Border>
+
+                <!-- Если хочешь без конвертеров (максимально безопасно) — используй этот TextBlock вместо Border выше:
+                <TextBlock Grid.Row="6"
+                           Text="{Binding ErrorText}"
+                           Foreground="{StaticResource B_Danger}"
+                           TextWrapping="Wrap"/>
+                -->
+
+                <!-- Кнопки -->
+                <Grid Grid.Row="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="Нажмите Enter для входа"
+                               Foreground="{StaticResource B_SubText}"
+                               VerticalAlignment="Center"
+                               FontSize="12"/>
+
+                    <Button Grid.Column="1"
+                            Content="Войти"
+                            MinWidth="110"
+                            Style="{StaticResource S_ButtonPrimary}"
+                            Click="OnLoginClick"/>
+
+                    <Button Grid.Column="3"
+                            Content="Отмена"
+                            MinWidth="110"
+                            Style="{StaticResource S_ButtonSecondary}"
+                            Click="OnCancelClick"/>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

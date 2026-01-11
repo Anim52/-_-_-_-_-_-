@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="MaxiMed.Application/MaxiMed.Application.csproj" />
+  <Project Path="MaxiMed.Domain/MaxiMed.Domain.csproj" />
+  <Project Path="MaxiMed.Infrastructure/MaxiMed.Infrastructure.csproj" />
+  <Project Path="MaxiMed.Wpf/MaxiMed.Wpf.csproj" Id="c7a9403a-29cd-45a3-9073-0f0cf0cb1396" />
+</Solution>

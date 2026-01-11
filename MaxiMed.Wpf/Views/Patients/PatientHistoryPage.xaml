@@ -1,0 +1,163 @@
+﻿<Page x:Class="MaxiMed.Wpf.Views.Patients.PatientHistoryPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:MaxiMed.Wpf.Views.Patients"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="История пациента"
+      Background="Transparent">
+
+    <Page.Resources>
+        <!-- Цвета -->
+        <Color x:Key="C_Primary">#2563EB</Color>
+        <Color x:Key="C_PrimaryDark">#1D4ED8</Color>
+        <Color x:Key="C_Text">#0F172A</Color>
+        <Color x:Key="C_SubText">#64748B</Color>
+        <Color x:Key="C_Border">#E2E8F0</Color>
+
+        <SolidColorBrush x:Key="B_Primary" Color="{StaticResource C_Primary}"/>
+        <SolidColorBrush x:Key="B_PrimaryDark" Color="{StaticResource C_PrimaryDark}"/>
+        <SolidColorBrush x:Key="B_Text" Color="{StaticResource C_Text}"/>
+        <SolidColorBrush x:Key="B_SubText" Color="{StaticResource C_SubText}"/>
+        <SolidColorBrush x:Key="B_Border" Color="{StaticResource C_Border}"/>
+
+        <DropShadowEffect x:Key="E_CardShadow"
+                          BlurRadius="26"
+                          ShadowDepth="8"
+                          Opacity="0.12"/>
+
+        <!-- Карточка -->
+        <Style x:Key="S_Card" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="BorderBrush" Value="#10E2E8F0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Effect" Value="{StaticResource E_CardShadow}"/>
+        </Style>
+
+        <!-- DataGrid стиль -->
+        <Style x:Key="S_DataGrid" TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="GridLinesVisibility" Value="None"/>
+            <Setter Property="RowHeaderWidth" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="RowBackground" Value="White"/>
+            <Setter Property="AlternatingRowBackground" Value="#FBFCFE"/>
+            <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="SelectionMode" Value="Single"/>
+            <Setter Property="SelectionUnit" Value="FullRow"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+        </Style>
+
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="Foreground" Value="{StaticResource B_SubText}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="BorderBrush" Value="{StaticResource B_Border}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        </Style>
+
+        <Style TargetType="DataGridRow">
+            <Setter Property="MinHeight" Value="40"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="BorderBrush" Value="#0FE2E8F0"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#E8F0FF"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#F1F5FF"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource B_Text}"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="14"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Шапка -->
+        <Border Grid.Row="0" Style="{StaticResource S_Card}" Padding="14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="История пациента"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource B_Text}"/>
+
+                    <TextBlock Text="{Binding Patient.Name}"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource B_Text}"
+                               Margin="0,6,0,0"/>
+
+                    <TextBlock Text="Дважды кликните по записи, чтобы открыть приём"
+                               Foreground="{StaticResource B_SubText}"
+                               FontSize="12"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!-- Мелкий бейдж справа (не обязателен) -->
+                <Border Grid.Column="1"
+                        Background="#EFF6FF"
+                        BorderBrush="#BFDBFE"
+                        BorderThickness="1"
+                        CornerRadius="999"
+                        Padding="10,6"
+                        VerticalAlignment="Top">
+                    <TextBlock Text="Double-click: открыть"
+                               Foreground="{StaticResource B_PrimaryDark}"
+                               FontSize="12"/>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Таблица -->
+        <Border Grid.Row="2" Style="{StaticResource S_Card}" Padding="0">
+            <DataGrid x:Name="HistoryGrid"
+                      Style="{StaticResource S_DataGrid}"
+                      ItemsSource="{Binding Items}">
+
+                <DataGrid.InputBindings>
+                    <MouseBinding Gesture="LeftDoubleClick"
+                                  Command="{Binding OpenAppointmentCommand}"
+                                  CommandParameter="{Binding SelectedItem, ElementName=HistoryGrid}"/>
+                </DataGrid.InputBindings>
+
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Дата"
+                                        Binding="{Binding StartAt, StringFormat={}{0:dd.MM.yyyy HH:mm}}"
+                                        Width="190"/>
+                    <DataGridTextColumn Header="Врач" Binding="{Binding DoctorName}" Width="*"/>
+                    <DataGridTextColumn Header="Филиал" Binding="{Binding BranchName}" Width="*"/>
+                    <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="140"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</Page>

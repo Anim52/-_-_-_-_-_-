@@ -1,0 +1,11 @@
+﻿<Application x:Class="MaxiMed.Wpf.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:MaxiMed.Wpf"
+             xmlns:converters="clr-namespace:MaxiMed.Wpf.Converters"
+             ShutdownMode="OnExplicitShutdown">
+    <Application.Resources>
+        <converters:BoolToFreeBusyBrushConverter x:Key="BoolToFreeBusyBrush"/>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+    </Application.Resources>
+</Application>
