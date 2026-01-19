@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MaxiMed.Application.Reports
@@ -12,33 +12,58 @@ namespace MaxiMed.Application.Reports
     public sealed class ReportService : IReportService
     {
         private readonly IDbContextFactory<MaxiMedDbContext> _dbFactory;
+
         public ReportService(IDbContextFactory<MaxiMedDbContext> dbFactory)
             => _dbFactory = dbFactory;
 
         // 1️⃣ Визиты
         public async Task<IReadOnlyList<VisitsReportRowDto>> GetVisitsAsync(
-            DateTime from, DateTime to, CancellationToken ct = default)
+            DateTime fromDate,
+            DateTime toDate,
+            CancellationToken ct = default)
         {
             await using var db = await _dbFactory.CreateDbContextAsync(ct);
 
-            return await db.Appointments.AsNoTracking()
-                .Where(a => a.StartAt >= from && a.StartAt <= to)
+            var from = fromDate;
+            var to = toDate;
+
+            // Берём приёмы за период + подцепляем доктора/пациента/счёт
+            var query = db.Appointments
+                .AsNoTracking()
                 .Include(a => a.Doctor)
                 .Include(a => a.Patient)
-                .OrderBy(a => a.StartAt)
+                .Include(a => a.Invoice)
+                .Where(a => a.StartAt >= from && a.StartAt <= to)
                 .Select(a => new VisitsReportRowDto
                 {
                     Date = a.StartAt,
                     Doctor = a.Doctor.FullName,
-                    Patient = (a.Patient.LastName + " " + a.Patient.FirstName),
-                    Status = a.Status.ToString()
-                })
+                    Patient = a.Patient.LastName + " " + a.Patient.FirstName,
+                    Status = a.Status == AppointmentStatus.Planned
+                        ? "Запланирована"
+                        : a.Status == AppointmentStatus.Canceled
+                            ? "Отменена"
+                            : a.Status == AppointmentStatus.Completed
+                                ? "Завершена"
+                                : a.Status.ToString(),
+                    Total = a.Invoice != null
+                        ? (a.Invoice.TotalAmount - a.Invoice.DiscountAmount)
+                        : 0m,
+                    Paid = a.Invoice != null
+                        ? a.Invoice.PaidAmount
+                        : 0m
+                });
+
+            return await query
+                .OrderBy(x => x.Date)
                 .ToListAsync(ct);
         }
 
         // 2️⃣ Выручка
         public async Task<IReadOnlyList<RevenueReportRowDto>> GetRevenueAsync(
-            DateTime from, DateTime to, CancellationToken ct = default)
+            DateTime from,
+            DateTime to,
+            CancellationToken ct = default)
         {
             await using var db = await _dbFactory.CreateDbContextAsync(ct);
 
@@ -57,7 +82,9 @@ namespace MaxiMed.Application.Reports
 
         // 3️⃣ По врачам
         public async Task<IReadOnlyList<DoctorReportRowDto>> GetDoctorsAsync(
-            DateTime from, DateTime to, CancellationToken ct = default)
+            DateTime from,
+            DateTime to,
+            CancellationToken ct = default)
         {
             await using var db = await _dbFactory.CreateDbContextAsync(ct);
 
@@ -70,11 +97,13 @@ namespace MaxiMed.Application.Reports
                     Doctor = g.Key,
                     VisitsCount = g.Count(),
                     Revenue = g.Sum(a =>
-                        a.Invoice != null ? a.Invoice.PaidAmount : 0)
+                        a.Invoice != null ? a.Invoice.PaidAmount : 0m)
                 })
                 .OrderByDescending(x => x.VisitsCount)
                 .ToListAsync(ct);
         }
+
+        // 4️⃣ Сводка по пациентам (повторные, пол, возраст)
         public async Task<PatientStatsReportDto> GetPatientStatsAsync(CancellationToken ct = default)
         {
             await using var db = await _dbFactory.CreateDbContextAsync(ct);
@@ -136,12 +165,12 @@ namespace MaxiMed.Application.Reports
 
             var ageGroups = new List<AgeStatRowDto>
             {
-                new() {  AgeGroup = "моложе 18", Count = gUnder18,  Percent = Percent(gUnder18) },
-                new() { AgeGroup = "18–24",     Count = g18_24,    Percent = Percent(g18_24) },
-                new() { AgeGroup = "25–34",     Count = g25_34,    Percent = Percent(g25_34) },
-                new() { AgeGroup = "35–44",     Count = g35_44,    Percent = Percent(g35_44) },
-                new() { AgeGroup = "45 и старше", Count = g45Plus, Percent = Percent(g45Plus) },
-                new() { AgeGroup = "Не указан", Count = gUnknownAge, Percent = Percent(gUnknownAge) },
+                new() {  AgeGroup = "моложе 18",   Count = gUnder18,   Percent = Percent(gUnder18) },
+                new() { AgeGroup = "18–24",        Count = g18_24,     Percent = Percent(g18_24) },
+                new() { AgeGroup = "25–34",        Count = g25_34,     Percent = Percent(g25_34) },
+                new() { AgeGroup = "35–44",        Count = g35_44,     Percent = Percent(g35_44) },
+                new() { AgeGroup = "45 и старше",  Count = g45Plus,    Percent = Percent(g45Plus) },
+                new() { AgeGroup = "Не указан",    Count = gUnknownAge,Percent = Percent(gUnknownAge) },
             };
 
             return new PatientStatsReportDto
@@ -152,13 +181,14 @@ namespace MaxiMed.Application.Reports
                 AgeGroups = ageGroups
             };
         }
+
+        // 5️⃣ Пол отдельно
         public async Task<IReadOnlyList<GenderStatRowDto>> GetGenderStatsAsync(CancellationToken ct = default)
         {
             await using var db = await _dbFactory.CreateDbContextAsync(ct);
 
-
             var grouped = await db.Patients
-                .GroupBy(p => p.Sex)         
+                .GroupBy(p => p.Sex)
                 .Select(g => new
                 {
                     Sex = g.Key,
@@ -167,7 +197,7 @@ namespace MaxiMed.Application.Reports
                 .ToListAsync(ct);
 
             var total = grouped.Sum(x => x.Count);
-            if (total == 0) total = 1; 
+            if (total == 0) total = 1;
 
             var result = grouped
                 .Select(x => new GenderStatRowDto
@@ -175,13 +205,11 @@ namespace MaxiMed.Application.Reports
                     GenderName = x.Sex switch
                     {
                         Sex.Male => "Мужской",
-                        Sex.Female => "Женский", 
+                        Sex.Female => "Женский",
                         _ => "Не указан"
                     },
                     Count = x.Count,
-                    Percent = total == 0
-    ? 0
-    : (double)x.Count / total * 100.0
+                    Percent = (double)x.Count / total * 100.0
                 })
                 .OrderByDescending(r => r.Count)
                 .ToList();
@@ -189,11 +217,11 @@ namespace MaxiMed.Application.Reports
             return result;
         }
 
+        // 6️⃣ Сводка по доходам/долгам/среднему чеку
         public async Task<SummaryReportDto> GetSummaryAsync(DateTime from, DateTime to)
         {
             await using var db = await _dbFactory.CreateDbContextAsync();
 
-            // Берём все счета за период
             var invoices = await db.Invoices
                 .AsNoTracking()
                 .Where(i => i.CreatedAt >= from && i.CreatedAt <= to)
@@ -211,7 +239,6 @@ namespace MaxiMed.Application.Reports
                 };
             }
 
-            // Сумма по счёту = TotalAmount - DiscountAmount
             var total = invoices.Sum(i => i.TotalAmount - i.DiscountAmount);
             var paid = invoices.Sum(i => i.PaidAmount);
             var debts = total - paid;
@@ -220,22 +247,23 @@ namespace MaxiMed.Application.Reports
 
             return new SummaryReportDto
             {
-                Income = paid,        // фактически оплачено
-                Expense = 0m,         // расходов пока нет — оставляем 0
+                Income = paid,
+                Expense = 0m,
                 AvgCheck = avg,
                 Debts = debts,
                 VisitsCount = count
             };
         }
 
+        // 7️⃣ Возраст отдельно
         public async Task<IReadOnlyList<AgeStatRowDto>> GetAgeStatsAsync(CancellationToken ct = default)
         {
             await using var db = await _dbFactory.CreateDbContextAsync(ct);
 
             var births = await db.Patients
                 .Where(p => p.BirthDate != null)
-                .Select(p => p.BirthDate!.Value)  
-                .ToListAsync(ct);                 
+                .Select(p => p.BirthDate!.Value)
+                .ToListAsync(ct);
 
             if (births.Count == 0)
                 return Array.Empty<AgeStatRowDto>();
@@ -251,12 +279,12 @@ namespace MaxiMed.Application.Reports
 
             var groups = new[]
             {
-        new { Name = "моложе 18",   Min = 0,  Max = 17 },
-        new { Name = "18–24",       Min = 18, Max = 24 },
-        new { Name = "25–34",       Min = 25, Max = 34 },
-        new { Name = "35–44",       Min = 35, Max = 44 },
-        new { Name = "45 и старше", Min = 45, Max = 150 },
-    };
+                new { Name = "моложе 18",   Min = 0,  Max = 17 },
+                new { Name = "18–24",       Min = 18, Max = 24 },
+                new { Name = "25–34",       Min = 25, Max = 34 },
+                new { Name = "35–44",       Min = 35, Max = 44 },
+                new { Name = "45 и старше", Min = 45, Max = 150 },
+            };
 
             var stats = groups.Select(g =>
             {
@@ -284,4 +312,3 @@ namespace MaxiMed.Application.Reports
         }
     }
 }
- 

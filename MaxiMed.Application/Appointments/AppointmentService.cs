@@ -140,11 +140,11 @@ namespace MaxiMed.Application.Appointments
                 .ToListAsync(ct);
         }
         public async Task<IReadOnlyList<FreeSlotDto>> FindFreeSlotsAsync(
-    int doctorId,
-    DateTime fromDate,
-    DateTime toDate,
-    int maxResults = 20,
-    CancellationToken ct = default)
+     int doctorId,
+     DateTime fromDate,
+     DateTime toDate,
+     int maxResults = 20,
+     CancellationToken ct = default)
         {
             var result = new List<FreeSlotDto>();
 
@@ -153,7 +153,7 @@ namespace MaxiMed.Application.Appointments
             var startDate = fromDate.Date;
             var endDate = toDate.Date.AddDays(1);
 
-            // забираем все записи врача в диапазоне
+            // записи врача
             var appointments = await db.Appointments.AsNoTracking()
                 .Where(a =>
                     a.DoctorId == doctorId &&
@@ -162,8 +162,19 @@ namespace MaxiMed.Application.Appointments
                     a.StartAt < endDate)
                 .ToListAsync(ct);
 
+            // нерабочие дни
+            var dayOffs = await db.DoctorDayOffs.AsNoTracking()
+                .Where(d => d.DoctorId == doctorId &&
+                            d.Date >= startDate &&
+                            d.Date < endDate)
+                .Select(d => d.Date)
+                .ToListAsync(ct);
+
             for (var day = startDate; day < endDate; day = day.AddDays(1))
             {
+                if (dayOffs.Contains(day.Date))
+                    continue; // 🔹 пропускаем день
+
                 var workStart = day.AddHours(9);
                 var workEnd = day.AddHours(18);
 
@@ -332,10 +343,11 @@ namespace MaxiMed.Application.Appointments
         private static async Task EnsureNoDoctorOverlap(MaxiMedDbContext db, AppointmentDto dto, CancellationToken ct)
         {
             var exists = await db.Appointments.AsNoTracking()
-                .Where(a => a.DoctorId == dto.DoctorId)
-                .Where(a => a.Id != dto.Id)
-                .Where(a => a.StartAt < dto.EndAt && a.EndAt > dto.StartAt)
-                .AnyAsync(ct);
+        .Where(a => a.DoctorId == dto.DoctorId)
+        .Where(a => a.Id != dto.Id)
+        .Where(a => a.Status != AppointmentStatus.Canceled) 
+        .Where(a => a.StartAt < dto.EndAt && a.EndAt > dto.StartAt)
+        .AnyAsync(ct);
 
             if (exists)
                 throw new InvalidOperationException("У врача уже есть запись на это время (пересечение).");

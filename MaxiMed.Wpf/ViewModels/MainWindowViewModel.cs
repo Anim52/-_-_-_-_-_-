@@ -36,7 +36,7 @@ namespace MaxiMed.Wpf.ViewModels
         public bool IsRegistrar => _session.IsInRole("Registrar");
         public bool IsDoctor => _session.IsInRole("Doctor");
         public bool CanSeePatients => IsAdmin || IsRegistrar;
-        public bool CanSeeAppointments => IsAdmin || IsRegistrar;
+        public bool CanSeeAppointments => IsAdmin || IsRegistrar || IsDoctor;
         public bool CanSeeWeekSchedule => IsAdmin || IsDoctor;
         public bool CanSeeFreeSlots => IsAdmin || IsRegistrar; 
         public bool CanSeeAdminPanel => IsAdmin;
@@ -124,7 +124,7 @@ namespace MaxiMed.Wpf.ViewModels
         private void OpenAdmin() => _nav.NavigateTo<AdminPage>();
 
 
-        // Выход — позже красиво сделаем “возврат на окно логина”
+
         [RelayCommand]
         private void Logout()
         {

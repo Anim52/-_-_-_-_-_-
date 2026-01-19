@@ -1,10 +1,8 @@
-﻿using MaxiMed.Domain.Entities;
+using MaxiMed.Domain.Entities;
 using MaxiMed.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MaxiMed.Application.Visits
@@ -21,11 +19,22 @@ namespace MaxiMed.Application.Visits
             var v = await db.Visits.FirstOrDefaultAsync(x => x.AppointmentId == appointmentId, ct);
             if (v is null)
             {
+                // Если doctorId не передали (0), берём его из записи
+                if (doctorId <= 0)
+                {
+                    doctorId = await db.Appointments
+                        .AsNoTracking()
+                        .Where(a => a.Id == appointmentId)
+                        .Select(a => a.DoctorId)
+                        .FirstOrDefaultAsync(ct);
+                }
+
                 v = new Visit
                 {
                     AppointmentId = appointmentId,
                     DoctorId = doctorId,
-                    OpenedAt = DateTime.UtcNow
+                    // В UI показываем "локальную" дату, поэтому используем Now
+                    OpenedAt = DateTime.Now
                 };
                 db.Visits.Add(v);
                 await db.SaveChangesAsync(ct);

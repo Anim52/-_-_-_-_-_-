@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaxiMed.Application.Appointments;
 using MaxiMed.Application.Common;
@@ -12,9 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Controls.Primitives;
 
 namespace MaxiMed.Wpf.ViewModels.Appointments
 {
@@ -22,24 +20,33 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
     {
         private readonly IAppointmentService _service;
         private readonly IServiceProvider _sp;
+        private readonly ISessionService _session;
 
         public ObservableCollection<AppointmentDto> Items { get; } = new();
 
         public List<LookupItemDto> Doctors { get; private set; } = new();
 
         [ObservableProperty] private DateTime? selectedDate = DateTime.Today;
-        [ObservableProperty] private int? selectedDoctorId; 
+        [ObservableProperty] private int? selectedDoctorId;
 
         [ObservableProperty] private AppointmentDto? selected;
         [ObservableProperty] private bool isBusy;
-        private bool CanChangeStatus =>
-    Selected is not null && Selected.Status == AppointmentStatus.Planned;
 
+        private bool CanWork() => !IsBusy;
+        private bool CanEditOrDelete() => !IsBusy && Selected is not null;
+        private bool CanChangeStatus => !IsBusy && Selected is not null && Selected.Status == AppointmentStatus.Planned;
+        private bool CanOpenVisitInternal => !IsBusy && Selected is not null;
 
-        public AppointmentsViewModel(IAppointmentService service, IServiceProvider sp)
+        public bool CanEdit => _session.IsInRole("Admin") || _session.IsInRole("Registrar");
+        public bool CanCancel => _session.IsInRole("Admin") || _session.IsInRole("Registrar");
+        public bool CanComplete => _session.IsInRole("Admin") || _session.IsInRole("Doctor");
+        public bool CanOpenVisit => _session.IsInRole("Admin") || _session.IsInRole("Doctor");
+
+        public AppointmentsViewModel(IAppointmentService service, IServiceProvider sp, ISessionService session)
         {
             _service = service;
             _sp = sp;
+            _session = session;
         }
 
         public async Task InitAsync()
@@ -48,15 +55,6 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
             OnPropertyChanged(nameof(Doctors));
             await LoadAsync();
         }
-        private readonly ISessionService _session;
-
-        public bool CanEdit => _session.IsInRole("Admin") || _session.IsInRole("Registrar");
-        public bool CanCancel => _session.IsInRole("Admin") || _session.IsInRole("Registrar");
-        public bool CanComplete => _session.IsInRole("Admin") || _session.IsInRole("Doctor");
-        public bool CanOpenVisit => _session.IsInRole("Admin") || _session.IsInRole("Doctor");
-
-        private bool CanWork() => !IsBusy;
-        private bool CanEditOrDelete() => !IsBusy && Selected is not null;
 
         partial void OnIsBusyChanged(bool value)
         {
@@ -64,6 +62,9 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
             AddCommand.NotifyCanExecuteChanged();
             EditCommand.NotifyCanExecuteChanged();
             DeleteCommand.NotifyCanExecuteChanged();
+            CompleteCommand.NotifyCanExecuteChanged();
+            CancelCommand.NotifyCanExecuteChanged();
+            OpenVisitCommand.NotifyCanExecuteChanged();
         }
 
         partial void OnSelectedChanged(AppointmentDto? value)
@@ -72,7 +73,7 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
             DeleteCommand.NotifyCanExecuteChanged();
             CompleteCommand.NotifyCanExecuteChanged();
             CancelCommand.NotifyCanExecuteChanged();
-
+            OpenVisitCommand.NotifyCanExecuteChanged();
         }
 
         [RelayCommand(CanExecute = nameof(CanWork))]
@@ -93,25 +94,44 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
                 IsBusy = false;
             }
         }
-        [RelayCommand(CanExecute = nameof(CanChangeStatus))]
-        private async Task CompleteAsync()
+
+        // ✅ открытие/редактирование карты приёма для ЛЮБОЙ записи (в т.ч. Completed)
+        [RelayCommand(CanExecute = nameof(CanOpenVisitInternal))]
+        private async Task OpenVisitAsync()
         {
             if (Selected is null) return;
 
-            var apptId = (long)Selected.Id;     
+            var apptId = (long)Selected.Id;
             var doctorId = Selected.DoctorId;
-            var patientId = Selected!.PatientId;
-
-            await _service.CompleteAsync(Selected.Id);
-
-            await LoadAsync();
-
+            var patientId = Selected.PatientId;
 
             var win = _sp.GetRequiredService<VisitEditWindow>();
             win.Owner = System.Windows.Application.Current.MainWindow;
 
             var vm = (VisitEditViewModel)win.DataContext;
-            await vm.LoadOrCreateAsync(apptId, doctorId,patientId);
+            await vm.LoadOrCreateAsync(apptId, doctorId, patientId);
+
+            win.ShowDialog();
+        }
+
+        [RelayCommand(CanExecute = nameof(CanChangeStatus))]
+        private async Task CompleteAsync()
+        {
+            if (Selected is null) return;
+
+            var apptId = (long)Selected.Id;
+            var doctorId = Selected.DoctorId;
+            var patientId = Selected.PatientId;
+
+            await _service.CompleteAsync(Selected.Id);
+            await LoadAsync();
+
+            // после завершения сразу открываем карту приёма
+            var win = _sp.GetRequiredService<VisitEditWindow>();
+            win.Owner = System.Windows.Application.Current.MainWindow;
+
+            var vm = (VisitEditViewModel)win.DataContext;
+            await vm.LoadOrCreateAsync(apptId, doctorId, patientId);
 
             win.ShowDialog();
         }
@@ -119,10 +139,10 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
         [RelayCommand(CanExecute = nameof(CanChangeStatus))]
         private async Task CancelAsync()
         {
-            await _service.CancelAsync(Selected!.Id);
+            if (Selected is null) return;
+            await _service.CancelAsync(Selected.Id);
             await LoadAsync();
         }
-
 
         [RelayCommand(CanExecute = nameof(CanWork))]
         public async Task AddAsync()
@@ -137,7 +157,6 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
                 EndAt = (SelectedDate ?? DateTime.Today).Date.AddHours(10).AddMinutes(30),
             }, "Новая запись");
 
-            // дефолты, чтобы не было 0
             if (vm.Branches.Count > 0 && vm.BranchId == 0) vm.BranchId = vm.Branches[0].Id;
             if (vm.Doctors.Count > 0 && vm.DoctorId == 0) vm.DoctorId = vm.Doctors[0].Id;
 
@@ -162,8 +181,9 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
 
             vm.LoadFrom(Selected, "Редактирование записи");
             await vm.SetPatientByIdAsync(Selected.PatientId);
+
             var win = _sp.GetRequiredService<AppointmentEditWindow>();
-            win.Owner = System.Windows.Application.Current.MainWindow; 
+            win.Owner = System.Windows.Application.Current.MainWindow;
             win.DataContext = vm;
 
             if (win.ShowDialog() == true)
@@ -178,18 +198,8 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
         {
             if (Selected is null) return;
 
-            var id = Selected.Id;
-
-            if (System.Windows.MessageBox.Show(
-                    $"Удалить запись ID={id}?",
-                    "Подтверждение",
-                    System.Windows.MessageBoxButton.YesNo,
-                    System.Windows.MessageBoxImage.Warning) != System.Windows.MessageBoxResult.Yes)
-                return;
-
-            await _service.DeleteAsync(id);
+            await _service.DeleteAsync(Selected.Id);
             await LoadAsync();
-            Selected = null;
         }
     }
 }

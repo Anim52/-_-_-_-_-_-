@@ -12,6 +12,8 @@ namespace MaxiMed.Application.Reports
         public string Doctor { get; set; } = "";
         public string Patient { get; set; } = "";
         public string Status { get; set; } = "";
+        public decimal Total { get; set; } 
+        public decimal Paid { get; set; } 
     }
 
     public sealed class RevenueReportRowDto

@@ -1,11 +1,10 @@
-﻿using MaxiMed.Domain.Entities;
+using MaxiMed.Domain.Entities;
 using MaxiMed.Domain.Lookups;
 using MaxiMed.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MaxiMed.Application.Invoices
@@ -39,7 +38,8 @@ namespace MaxiMed.Application.Invoices
                 {
                     AppointmentId = appt.Id,
                     PatientId = appt.PatientId,
-                    CreatedAt = DateTime.UtcNow,
+                    // В UI ожидают локальную дату, поэтому Now
+                    CreatedAt = DateTime.Now,
                     DiscountAmount = 0,
                     PaidAmount = 0,
                     TotalAmount = 0
@@ -92,7 +92,13 @@ namespace MaxiMed.Application.Invoices
             await db.SaveChangesAsync(ct);
         }
 
-        public async Task<long> AddPaymentAsync(long invoiceId, PaymentMethod method, decimal amount, string? note, CancellationToken ct = default)
+        public async Task<long> AddPaymentAsync(
+            long invoiceId,
+            PaymentMethod method,
+            decimal amount,
+            DateTime paidAt,
+            string? note,
+            CancellationToken ct = default)
         {
             if (amount <= 0) throw new ArgumentException("Сумма должна быть больше 0");
 
@@ -110,7 +116,8 @@ namespace MaxiMed.Application.Invoices
                 Method = method,
                 Amount = amount,
                 Note = string.IsNullOrWhiteSpace(note) ? null : note.Trim(),
-                PaidAt = DateTime.UtcNow
+                // важно: используем дату, выбранную пользователем (локальную)
+                PaidAt = paidAt
             });
 
             inv.TotalAmount = inv.Items.Sum(x => x.Qty * x.Price);
@@ -119,6 +126,18 @@ namespace MaxiMed.Application.Invoices
             await db.SaveChangesAsync(ct);
 
             return inv.Payments.OrderByDescending(x => x.Id).First().Id;
+        }
+
+        public async Task UpdatePaymentDateAsync(long paymentId, DateTime paidAt, CancellationToken ct = default)
+        {
+            await using var db = await _dbFactory.CreateDbContextAsync(ct);
+
+            var p = await db.Payments.FirstOrDefaultAsync(x => x.Id == paymentId, ct)
+                ?? throw new InvalidOperationException("Платёж не найден");
+
+            p.PaidAt = paidAt;
+
+            await db.SaveChangesAsync(ct);
         }
 
         public async Task DeletePaymentAsync(long paymentId, CancellationToken ct = default)

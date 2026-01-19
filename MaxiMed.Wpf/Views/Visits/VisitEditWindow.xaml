@@ -466,6 +466,15 @@
                     <Button Content="Закрыть"
                             Style="{StaticResource S_ButtonSecondary}"
                             IsCancel="True"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="Сумма по услугам:"
+               FontWeight="Bold"
+               VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding ServicesTotal, StringFormat={}{0:F2} ₽}"
+               Margin="6,0,0,0"
+               VerticalAlignment="Center"/>
+                    </StackPanel>
+
                 </StackPanel>
             </DockPanel>
         </Border>

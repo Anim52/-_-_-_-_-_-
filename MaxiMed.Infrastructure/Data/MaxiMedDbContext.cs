@@ -41,9 +41,20 @@ namespace MaxiMed.Infrastructure.Data
         public DbSet<Role> Roles => Set<Role>();
         public DbSet<UserRole> UserRoles => Set<UserRole>();   
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
-
+        public DbSet<DoctorDayOff> DoctorDayOffs { get; set; } = null!;
         protected override void OnModelCreating(ModelBuilder b)
         {
+            b.Entity<DoctorDayOff>(b =>
+            {
+                b.ToTable("DoctorDayOffs");
+                b.HasKey(x => x.Id);
+                b.Property(x => x.Date).HasColumnType("date");
+
+                b.HasOne(x => x.Doctor)
+                    .WithMany()
+                    .HasForeignKey(x => x.DoctorId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
             b.HasDefaultSchema("dbo");
 
             b.Entity<UserRole>()

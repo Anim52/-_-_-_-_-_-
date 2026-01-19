@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace MaxiMed.Wpf.ViewModels.Reports
@@ -28,6 +29,10 @@ namespace MaxiMed.Wpf.ViewModels.Reports
 
         [ObservableProperty] private DateTime from = DateTime.Today.AddDays(-30);
         [ObservableProperty] private DateTime to = DateTime.Today;
+
+        public Func<double, string> AgeFormatter => v => v.ToString("0");
+        public Func<double, string> FinanceFormatter => v => v.ToString("0.00");
+        public Func<double, string> VisitsFormatter => v => v.ToString("0");
 
         // --- Графики LiveCharts.Wpf ---
         // Пирог по полу
@@ -143,31 +148,38 @@ namespace MaxiMed.Wpf.ViewModels.Reports
 
             FinanceLabels = ordered.Select(r => r.Date.ToString("dd.MM")).ToArray();
 
-            var incomeValues = new ChartValues<double>(ordered.Select(r => (double)r.Paid));
-            // Условные расходы, пока 30% от дохода
-            var expenseValues = new ChartValues<double>(ordered.Select(r => (double)r.Paid * 0.3));
+            // ✅ ОКРУГЛЯЕМ ДО 2 ЗНАКОВ
+            var incomeValues = new ChartValues<double>(
+                ordered.Select(r => Math.Round((double)r.Paid, 2))
+            );
+
+            // условные расходы = 30% от дохода, тоже округляем
+            var expenseValues = new ChartValues<double>(
+                ordered.Select(r => Math.Round((double)r.Paid * 0.3, 2))
+            );
 
             FinanceSeries = new SeriesCollection
-            {
-                new LineSeries
-                {
-                    Title = "Доход (оплачено)",
-                    Values = incomeValues,
-                    PointGeometry = DefaultGeometries.Circle,
-                    PointGeometrySize = 6
-                },
-                new LineSeries
-                {
-                    Title = "Расход (30%)",
-                    Values = expenseValues,
-                    PointGeometry = DefaultGeometries.Square,
-                    PointGeometrySize = 6
-                }
-            };
+    {
+        new LineSeries
+        {
+            Title = "Доход (оплачено)",
+            Values = incomeValues,
+            PointGeometry = DefaultGeometries.Circle,
+            PointGeometrySize = 6
+        },
+        new LineSeries
+        {
+            Title = "Расход (30%)",
+            Values = expenseValues,
+            PointGeometry = DefaultGeometries.Square,
+            PointGeometrySize = 6
+        }
+    };
 
             OnPropertyChanged(nameof(FinanceSeries));
             OnPropertyChanged(nameof(FinanceLabels));
         }
+
 
         private void BuildVisitsCountChart()
         {
@@ -239,7 +251,14 @@ namespace MaxiMed.Wpf.ViewModels.Reports
             await EnsureLoadedAsync();
 
             if (Revenue.Count == 0)
-                throw new Exception("За выбранный период нет данных по выручке.");
+            {
+                MessageBox.Show(
+                    "За выбранный период нет данных по выручке.",
+                    "Нет данных",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
 
             var dlg = new SaveFileDialog
             {
@@ -280,7 +299,11 @@ namespace MaxiMed.Wpf.ViewModels.Reports
             await EnsureLoadedAsync();
 
             if (Visits.Count == 0)
-                throw new Exception("За выбранный период нет визитов.");
+            {
+                MessageBox.Show("За выбранный период нет данных по визитам..." );
+                return;
+            }
+
 
             var dlg = new SaveFileDialog
             {
@@ -292,13 +315,15 @@ namespace MaxiMed.Wpf.ViewModels.Reports
             using var wb = new XLWorkbook();
             var ws = wb.AddWorksheet("Visits");
 
-            ws.Cell(1, 1).Value = "Дата/время";
+            ws.Cell(1, 1).Value = "Дата";
             ws.Cell(1, 2).Value = "Врач";
             ws.Cell(1, 3).Value = "Пациент";
             ws.Cell(1, 4).Value = "Статус";
+            ws.Cell(1, 5).Value = "Сумма";
+            ws.Cell(1, 6).Value = "Оплачено";
 
             var r = 2;
-            foreach (var x in Visits.OrderBy(x => x.Date))
+            foreach (var x in Visits)
             {
                 ws.Cell(r, 1).Value = x.Date;
                 ws.Cell(r, 1).Style.DateFormat.Format = "dd.MM.yyyy HH:mm";
@@ -306,11 +331,14 @@ namespace MaxiMed.Wpf.ViewModels.Reports
                 ws.Cell(r, 2).Value = x.Doctor;
                 ws.Cell(r, 3).Value = x.Patient;
                 ws.Cell(r, 4).Value = x.Status;
+                ws.Cell(r, 5).Value = x.Total;
+                ws.Cell(r, 6).Value = x.Paid;
                 r++;
             }
 
-            ws.Range(1, 1, 1, 4).Style.Font.Bold = true;
+            ws.Range(1, 1, 1, 6).Style.Font.Bold = true;
             ws.Columns().AdjustToContents();
+
 
             wb.SaveAs(dlg.FileName);
         }

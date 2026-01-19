@@ -49,6 +49,7 @@ namespace MaxiMed.Wpf.ViewModels.Visits
         [ObservableProperty] private string? examination;
         [ObservableProperty] private string? diagnosisText;
         [ObservableProperty] private string? recommendations;
+        [ObservableProperty] private decimal servicesTotal;
 
         // -------- Diagnoses
         public ObservableCollection<VisitDiagnosisItemDto> Diagnoses { get; } = new();
@@ -120,6 +121,7 @@ namespace MaxiMed.Wpf.ViewModels.Visits
             Services.Clear();
             var list = await _apptServices.GetAsync(AppointmentId);
             foreach (var x in list) Services.Add(x);
+            ServicesTotal = Services.Sum(s => s.Price);
         }
         private async Task ReloadDiagnosesAsync()
         {

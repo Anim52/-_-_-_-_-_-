@@ -18,5 +18,6 @@ namespace MaxiMed.Wpf.ViewModels.Schedule
         public string? BranchName { get; set; }
 
         public string TimeRange => $"{StartAt:HH:mm} - {EndAt:HH:mm}";
+        public bool IsDayOff { get; set; }
     }
 }

@@ -1,14 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DocumentFormat.OpenXml.Office2010.Excel;
 using MaxiMed.Application.Invoices;
-using MaxiMed.Domain.Entities;
 using MaxiMed.Domain.Lookups;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MaxiMed.Wpf.ViewModels.Invoices
@@ -29,19 +24,29 @@ namespace MaxiMed.Wpf.ViewModels.Invoices
         public ObservableCollection<InvoiceItemDto> Items { get; } = new();
         public ObservableCollection<PaymentDto> Payments { get; } = new();
 
-        // добавление платежа
+        // ----- добавление платежа
         [ObservableProperty] private PaymentMethod paymentMethod = PaymentMethod.Cash;
         [ObservableProperty] private decimal paymentAmount;
         [ObservableProperty] private string? paymentNote;
+        // дата платежа выбирается пользователем (по умолчанию - сегодня)
+        [ObservableProperty] private DateTime paymentDate = DateTime.Today;
 
+        // ----- редактирование выбранного платежа
         [ObservableProperty] private PaymentDto? selectedPayment;
+        [ObservableProperty] private DateTime selectedPaymentDate;
 
         [ObservableProperty] private string? errorText;
         [ObservableProperty] private bool isBusy;
 
         public InvoiceViewModel(IInvoiceService service) => _service = service;
 
-        // ✅ ЕДИНЫЙ метод загрузки
+        partial void OnSelectedPaymentChanged(PaymentDto? value)
+        {
+            if (value != null)
+                SelectedPaymentDate = value.PaidAt;
+        }
+
+        // единый метод загрузки
         public async Task LoadByAppointmentAsync(long apptId)
         {
             AppointmentId = apptId;
@@ -78,11 +83,36 @@ namespace MaxiMed.Wpf.ViewModels.Invoices
                 ErrorText = null;
                 if (PaymentAmount <= 0) throw new ArgumentException("Сумма должна быть больше 0");
 
-                await _service.AddPaymentAsync(InvoiceId, PaymentMethod, PaymentAmount, PaymentNote);
+                // сохраняем локальную дату (с текущим временем, чтобы не терять сортировку)
+                var paidAt = PaymentDate.Date + DateTime.Now.TimeOfDay;
+
+                await _service.AddPaymentAsync(InvoiceId, PaymentMethod, PaymentAmount, paidAt, PaymentNote);
 
                 PaymentAmount = 0;
                 PaymentNote = null;
+                PaymentDate = DateTime.Today;
 
+                await ReloadAsync();
+            }
+            catch (Exception ex)
+            {
+                ErrorText = ex.Message;
+            }
+        }
+
+        [RelayCommand]
+        private async Task UpdateSelectedPaymentDateAsync()
+        {
+            if (SelectedPayment is null) return;
+
+            try
+            {
+                ErrorText = null;
+
+                // аналогично - сохраняем выбранную дату + текущее время
+                var paidAt = SelectedPaymentDate.Date + DateTime.Now.TimeOfDay;
+
+                await _service.UpdatePaymentDateAsync(SelectedPayment.Id, paidAt);
                 await ReloadAsync();
             }
             catch (Exception ex)

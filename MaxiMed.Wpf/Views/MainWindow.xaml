@@ -171,11 +171,7 @@
 
                         <StackPanel>
                             <TextBlock Text="MaxiMed" FontSize="20" FontWeight="Bold" Foreground="{StaticResource B_Text}"/>
-                            <TextBlock Text="{Binding CurrentUserTitle}"
-                                       Foreground="{StaticResource B_SubText}"
-                                       FontSize="12"
-                                       TextWrapping="Wrap"
-                                       MaxWidth="190"/>
+                            
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>

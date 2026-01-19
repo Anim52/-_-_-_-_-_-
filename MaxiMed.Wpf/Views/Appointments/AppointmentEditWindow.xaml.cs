@@ -20,11 +20,31 @@ namespace MaxiMed.Wpf.Views.Appointments
     /// </summary>
     public partial class AppointmentEditWindow : Window
     {
-        public AppointmentEditWindow(AppointmentEditViewModel vm)
+        public AppointmentEditWindow()
         {
             InitializeComponent();
-            DataContext = vm;
-            vm.RequestClose += ok => { DialogResult = ok; Close(); };
+
+            // следим за сменой DataContext и подписываемся на ViewModel
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.OldValue is AppointmentEditViewModel oldVm)
+                oldVm.RequestClose -= Vm_RequestClose;
+
+            if (e.NewValue is AppointmentEditViewModel newVm)
+                newVm.RequestClose += Vm_RequestClose;
+        }
+
+        private void Vm_RequestClose(bool ok)
+        {
+            // на всякий — через Dispatcher
+            Dispatcher.Invoke(() =>
+            {
+                DialogResult = ok;
+                Close();
+            });
         }
     }
 }

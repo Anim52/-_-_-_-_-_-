@@ -8,7 +8,7 @@
       
         mc:Ignorable="d"
        Title="Счёт"
-        Height="720"
+        Height="780"
         Width="1020"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
@@ -37,6 +37,17 @@
                           BlurRadius="26"
                           ShadowDepth="8"
                           Opacity="0.12"/>
+        <!-- DatePicker -->
+        <Style x:Key="S_DatePicker" TargetType="DatePicker">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource B_Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{StaticResource B_Text}"/>
+        </Style>
+
 
         <!-- Карточка -->
         <Style x:Key="S_Card" TargetType="Border">
@@ -308,10 +319,7 @@
                         <TextBlock Text="{Binding TotalAmount}" Style="{StaticResource S_KpiValue}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="1">
-                        <TextBlock Text="Скидка" Style="{StaticResource S_KpiTitle}"/>
-                        <TextBlock Text="{Binding DiscountAmount}" Style="{StaticResource S_KpiValue}"/>
-                    </StackPanel>
+                    
 
                     <StackPanel Grid.Column="2">
                         <TextBlock Text="Оплачено" Style="{StaticResource S_KpiTitle}"/>
@@ -367,6 +375,12 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+
                     <ComboBox Grid.Column="0"
                               Style="{StaticResource S_ComboBox}"
                               SelectedItem="{Binding PaymentMethod}">
@@ -391,10 +405,22 @@
                             Content="Добавить"
                             Style="{StaticResource S_ButtonPrimary}"
                             Command="{Binding AddPaymentCommand}"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0"
+                               VerticalAlignment="Center"
+                               Margin="0,8,0,0"
+                               Foreground="{StaticResource B_SubText}"
+                               Text="Дата оплаты"/>
+                    <DatePicker Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3"
+                                Style="{StaticResource S_DatePicker}"
+                                Margin="0,8,0,0"
+                                SelectedDate="{Binding PaymentDate}"/>
+
                 </Grid>
             </DockPanel>
         </Border>
 
+        <!-- Платежи -->
         <!-- Платежи -->
         <Border Grid.Row="6" Style="{StaticResource S_Card}" Padding="14">
             <DockPanel>
@@ -405,19 +431,44 @@
                     </StackPanel>
 
                     <Button DockPanel.Dock="Right"
-                            Content="Удалить выбранный"
-                            Style="{StaticResource S_ButtonDanger}"
-                            Command="{Binding DeletePaymentCommand}"/>
+                    Content="Удалить выбранный"
+                    Style="{StaticResource S_ButtonDanger}"
+                    Command="{Binding DeletePaymentCommand}"/>
                 </DockPanel>
+
+                <!-- Редактирование даты выбранного платежа -->
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="220"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource B_SubText}"
+                       Text="Дата выбранного платежа"/>
+
+                    <DatePicker Grid.Column="2"
+                        Style="{StaticResource S_DatePicker}"
+                        SelectedDate="{Binding SelectedPaymentDate}"/>
+
+                    <Button Grid.Column="4"
+                    Content="Сохранить дату"
+                    Style="{StaticResource S_ButtonSecondary}"
+                    Command="{Binding UpdateSelectedPaymentDateCommand}"/>
+                </Grid>
 
                 <Border BorderBrush="#10E2E8F0" BorderThickness="1" CornerRadius="12" Padding="0">
                     <DataGrid Style="{StaticResource S_DataGrid}"
-                              ItemsSource="{Binding Payments}"
-                              SelectedItem="{Binding SelectedPayment}">
+                      ItemsSource="{Binding Payments}"
+                      SelectedItem="{Binding SelectedPayment}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Дата"
-                                                Binding="{Binding PaidAt, StringFormat={}{0:dd.MM.yyyy HH:mm}}"
-                                                Width="180"/>
+                                        Binding="{Binding PaidAt, StringFormat={}{0:dd.MM.yyyy HH:mm}}"
+                                        Width="180"/>
                             <DataGridTextColumn Header="Метод" Binding="{Binding Method}" Width="140"/>
                             <DataGridTextColumn Header="Сумма" Binding="{Binding Amount}" Width="140"/>
                             <DataGridTextColumn Header="Комментарий" Binding="{Binding Note}" Width="*"/>

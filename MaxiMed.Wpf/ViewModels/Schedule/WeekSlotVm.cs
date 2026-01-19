@@ -15,7 +15,7 @@ namespace MaxiMed.Wpf.ViewModels.Schedule
 
         public int? AppointmentId { get; set; }
         public string? PatientName { get; set; }
-
+        public bool IsDayOff { get; set; }
         public string Time => $"{StartAt:HH:mm}";
     }
 }

@@ -112,6 +112,8 @@ public partial class App : System.Windows.Application
                 
                 services.AddScoped<IUserService, UserService>();
 
+                services.AddScoped<IDoctorDayOffService, DoctorDayOffService>();
+
                 services.AddScoped<IVisitService, VisitService>();
 
                 services.AddSingleton<IBranchService, BranchService>();

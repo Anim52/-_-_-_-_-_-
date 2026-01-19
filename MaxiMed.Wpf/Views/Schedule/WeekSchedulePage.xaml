@@ -146,14 +146,26 @@
         </Style>
 
         <!-- Ячейка-слот -->
+        <!-- Ячейка-слот -->
         <Style x:Key="S_SlotBorder" TargetType="Border">
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="BorderBrush" Value="#16E2E8F0"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Margin" Value="3"/>
             <Setter Property="Padding" Value="6"/>
-            <!-- Фон берём как у тебя через конвертер -->
+            <!-- по умолчанию фон через конвертер -->
+            <Setter Property="Background"
+            Value="{Binding IsFree, Converter={StaticResource BoolToFreeBusyBrush}}"/>
+
+            <Style.Triggers>
+                <!-- ⚠️ Нерабочий день — серый фон -->
+                <DataTrigger Binding="{Binding IsDayOff}" Value="True">
+                    <Setter Property="Background" Value="#FFE5E7EB"/>
+                    <Setter Property="BorderBrush" Value="#FF9CA3AF"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
+
 
         <!-- Кнопка внутри слота: НЕ задаём Content в атрибуте, только в Style -->
         <Style x:Key="S_SlotButton" TargetType="Button">
@@ -190,15 +202,25 @@
             </Setter>
 
             <Style.Triggers>
-                <!-- Если занято: показываем пациента и отключаем -->
+                <!-- уже было: занятый слот -->
                 <DataTrigger Binding="{Binding IsFree}" Value="False">
                     <Setter Property="Content" Value="{Binding PatientName}"/>
                     <Setter Property="IsEnabled" Value="False"/>
                     <Setter Property="ToolTip" Value="Занято"/>
                     <Setter Property="FontWeight" Value="Normal"/>
                 </DataTrigger>
+
+                <!-- ⚠️ Нерабочий день — особый текст -->
+                <DataTrigger Binding="{Binding IsDayOff}" Value="True">
+                    <Setter Property="Content" Value="Нерабочий день"/>
+                    <Setter Property="IsEnabled" Value="False"/>
+                    <Setter Property="ToolTip" Value="Нерабочий день"/>
+                    <Setter Property="Foreground" Value="{StaticResource B_SubText}"/>
+                    <Setter Property="FontWeight" Value="Normal"/>
+                </DataTrigger>
             </Style.Triggers>
         </Style>
+
     </Page.Resources>
 
     <Grid Margin="16">
@@ -244,6 +266,28 @@
                             Style="{StaticResource S_ButtonPrimary}"
                             Margin="12,0,0,0"
                             Command="{Binding LoadCommand}"/>
+                    <TextBlock Text="День"
+           Style="{StaticResource S_FieldLabel}"
+           Margin="12,0,6,0"/>
+
+                    <ComboBox Style="{StaticResource S_ComboBox}"
+          Width="140"
+          ItemsSource="{Binding Days}"
+          SelectedItem="{Binding SelectedDayForDayOff}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock xml:lang="ru-RU"
+                       Text="{Binding Path=., StringFormat='{}{0:ddd dd.MM}'}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <Button Content="Отметить день как нерабочий"
+        Command="{Binding SetDayOffCommand}"
+        Visibility="{Binding CanSetDayOff, Converter={StaticResource BoolToVisibility}}"
+        Margin="10,0,10,0"
+        Style="{StaticResource S_ButtonPrimary}"/>
+
 
                     <Button Content="Экспорт Excel"
                             Style="{StaticResource S_ButtonSecondary}"
@@ -265,23 +309,37 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
+                        <!-- пусто над временем -->
                         <TextBlock Grid.Column="0"/>
 
-                        <ItemsControl Grid.Column="1" ItemsSource="{Binding Days}">
+                        <!-- 7 колонок с датами текущей недели -->
+                        <ItemsControl Grid.Column="1"
+                  ItemsSource="{Binding Days}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <UniformGrid Columns="7"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
+
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Style="{StaticResource S_DayHeader}"
-                                               Text="{Binding StringFormat={}{0:ddd dd.MM}}"/>
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <!-- День недели: пн, вт... -->
+                                        <TextBlock Text="{Binding Path=., StringFormat='{}{0:ddd}'}"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource B_SubText}"
+                               HorizontalAlignment="Center"/>
+
+                                        <!-- Дата: 12.01 -->
+                                        <TextBlock Text="{Binding Path=., StringFormat='{}{0:dd.MM}'}"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource B_Text}"
+                               HorizontalAlignment="Center"/>
+                                    </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </Grid>
-
                     <!-- Строки -->
                     <ItemsControl ItemsSource="{Binding Rows}">
                         <ItemsControl.ItemTemplate>
@@ -303,7 +361,6 @@
                                                 <UniformGrid Columns="7"/>
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
-
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Border Style="{StaticResource S_SlotBorder}"
@@ -320,7 +377,6 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-
                 </StackPanel>
             </ScrollViewer>
         </Border>

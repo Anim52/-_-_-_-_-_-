@@ -299,6 +299,11 @@
                             Margin="0,0,10,0"
                             Command="{Binding CompleteCommand}"/>
 
+                    <Button Content="Открыть приём"
+                            Style="{StaticResource S_ButtonSecondary}"
+                            Margin="0,0,10,0"
+                            Command="{Binding OpenVisitCommand}"/>
+
                     <Button Content="Отменить"
                             Style="{StaticResource S_ButtonSecondary}"
                             Command="{Binding CancelCommand}"/>
@@ -321,7 +326,7 @@
                     <DataGridTextColumn Header="Пациент" Binding="{Binding PatientName}" Width="*"/>
                     <DataGridTextColumn Header="Врач" Binding="{Binding DoctorName}" Width="220"/>
                     <DataGridTextColumn Header="Филиал" Binding="{Binding BranchName}" Width="220"/>
-                    <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="140"/>
+                    <DataGridTextColumn Header="Статус" Binding="{Binding StatusText}" Width="140"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

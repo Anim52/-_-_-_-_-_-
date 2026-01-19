@@ -30,6 +30,7 @@ namespace MaxiMed.Application.Invoices
                 InvoiceId = invoiceId,
                 Method = method,
                 Amount = amount,
+                PaidAt = DateTime.Now,
                 Note = note
             });
 

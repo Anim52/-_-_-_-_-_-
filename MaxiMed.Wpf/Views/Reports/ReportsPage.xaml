@@ -284,30 +284,66 @@
 
             <!-- ТАБЛИЦЫ -->
             <Border Grid.Column="0"
-                    Style="{StaticResource S_Card}"
-                    Padding="10"
-                    Margin="0,0,8,0">
+        Style="{StaticResource S_Card}"
+        Padding="10"
+        Margin="0,0,8,0">
                 <TabControl Style="{StaticResource S_TabControl}">
+
                     <!-- Визиты -->
                     <TabItem Header="Визиты">
                         <DataGrid Style="{StaticResource S_DataGrid}"
-                                  ItemsSource="{Binding Visits}"
-                                  AutoGenerateColumns="True"/>
+                      ItemsSource="{Binding Visits}"
+                      AutoGenerateColumns="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Дата"
+                                        Binding="{Binding Date, StringFormat=\{0:dd.MM.yyyy HH:mm\}}"/>
+                                <DataGridTextColumn Header="Врач"
+                                        Binding="{Binding Doctor}"/>
+                                <DataGridTextColumn Header="Пациент"
+                                        Binding="{Binding Patient}"/>
+                                <DataGridTextColumn Header="Статус"
+                                        Binding="{Binding Status}"/>
+                                <DataGridTextColumn Header="Сумма"
+                                        Binding="{Binding Total, StringFormat=\{0:F2\}}"/>
+                                <DataGridTextColumn Header="Оплачено"
+                                        Binding="{Binding Paid, StringFormat=\{0:F2\}}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
                     </TabItem>
 
                     <!-- Выручка -->
                     <TabItem Header="Выручка">
                         <DataGrid Style="{StaticResource S_DataGrid}"
-                                  ItemsSource="{Binding Revenue}"
-                                  AutoGenerateColumns="True"/>
+                      ItemsSource="{Binding Revenue}"
+                      AutoGenerateColumns="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Дата"
+                                        Binding="{Binding Date, StringFormat=\{0:dd.MM.yyyy\}}"/>
+                                <DataGridTextColumn Header="Всего"
+                                        Binding="{Binding Total, StringFormat=\{0:F2\}}"/>
+                                <DataGridTextColumn Header="Оплачено"
+                                        Binding="{Binding Paid, StringFormat=\{0:F2\}}"/>
+                                <DataGridTextColumn Header="Долг"
+                                        Binding="{Binding Debt, StringFormat=\{0:F2\}}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
                     </TabItem>
 
                     <!-- По врачам -->
                     <TabItem Header="По врачам">
                         <DataGrid x:Name="GridDoctors"
-                                  Style="{StaticResource S_DataGrid}"
-                                  ItemsSource="{Binding Doctors}"
-                                  AutoGenerateColumns="True"/>
+                      Style="{StaticResource S_DataGrid}"
+                      ItemsSource="{Binding Doctors}"
+                      AutoGenerateColumns="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Врач"
+                                        Binding="{Binding Doctor}"/>
+                                <DataGridTextColumn Header="Количество визитов"
+                                        Binding="{Binding VisitsCount}"/>
+                                <DataGridTextColumn Header="Выручка"
+                                        Binding="{Binding Revenue, StringFormat=\{0:F2\}}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
                     </TabItem>
 
                     <!-- Сводка -->
@@ -315,17 +351,16 @@
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <StackPanel Margin="10" Orientation="Vertical">
 
-                                <!-- Карточки -->
                                 <UniformGrid Columns="3" Margin="0,0,0,10">
 
                                     <!-- Доход -->
                                     <Border Style="{StaticResource S_Card}" Padding="14" Margin="6">
                                         <StackPanel>
                                             <TextBlock Text="Доход" FontSize="14" Foreground="{StaticResource B_SubText}" />
-                                            <TextBlock Text="{Binding Summary.Income}" 
-                                   FontSize="24"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource B_Text}" />
+                                            <TextBlock Text="{Binding Summary.Income, StringFormat=\{0:F2\}}"
+                                           FontSize="24"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource B_Text}" />
                                         </StackPanel>
                                     </Border>
 
@@ -333,10 +368,10 @@
                                     <Border Style="{StaticResource S_Card}" Padding="14" Margin="6">
                                         <StackPanel>
                                             <TextBlock Text="Расход" FontSize="14" Foreground="{StaticResource B_SubText}" />
-                                            <TextBlock Text="{Binding Summary.Expense}" 
-                                   FontSize="24"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource B_Text}" />
+                                            <TextBlock Text="{Binding Summary.Expense, StringFormat=\{0:F2\}}"
+                                           FontSize="24"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource B_Text}" />
                                         </StackPanel>
                                     </Border>
 
@@ -344,10 +379,10 @@
                                     <Border Style="{StaticResource S_Card}" Padding="14" Margin="6">
                                         <StackPanel>
                                             <TextBlock Text="Прибыль" FontSize="14" Foreground="{StaticResource B_SubText}" />
-                                            <TextBlock Text="{Binding Summary.Profit}" 
-                                   FontSize="24"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource B_Text}" />
+                                            <TextBlock Text="{Binding Summary.Profit, StringFormat=\{0:F2\}}"
+                                           FontSize="24"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource B_Text}" />
                                         </StackPanel>
                                     </Border>
                                 </UniformGrid>
@@ -358,10 +393,10 @@
                                     <Border Style="{StaticResource S_Card}" Padding="14" Margin="6">
                                         <StackPanel>
                                             <TextBlock Text="Средний чек" FontSize="14" Foreground="{StaticResource B_SubText}" />
-                                            <TextBlock Text="{Binding Summary.AvgCheck}"
-                                   FontSize="24"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource B_Text}" />
+                                            <TextBlock Text="{Binding Summary.AvgCheck, StringFormat=\{0:F2\}}"
+                                           FontSize="24"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource B_Text}" />
                                         </StackPanel>
                                     </Border>
 
@@ -369,10 +404,10 @@
                                     <Border Style="{StaticResource S_Card}" Padding="14" Margin="6">
                                         <StackPanel>
                                             <TextBlock Text="Долги" FontSize="14" Foreground="{StaticResource B_SubText}" />
-                                            <TextBlock Text="{Binding Summary.Debts}"
-                                   FontSize="24"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource B_Text}" />
+                                            <TextBlock Text="{Binding Summary.Debts, StringFormat=\{0:F2\}}"
+                                           FontSize="24"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource B_Text}" />
                                         </StackPanel>
                                     </Border>
 
@@ -381,25 +416,21 @@
                                         <StackPanel>
                                             <TextBlock Text="Кол-во визитов" FontSize="14" Foreground="{StaticResource B_SubText}" />
                                             <TextBlock Text="{Binding Summary.VisitsCount}"
-                                   FontSize="24"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource B_Text}" />
+                                           FontSize="24"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource B_Text}" />
                                         </StackPanel>
                                     </Border>
 
                                 </UniformGrid>
 
-                                
-                               
-
                             </StackPanel>
                         </ScrollViewer>
                     </TabItem>
 
-
                 </TabControl>
-
             </Border>
+
 
             <!-- ГРАФИКИ -->
             <Border Grid.Column="1"
@@ -440,36 +471,45 @@
                         <!-- Возрастные группы -->
                         <TabItem Header="Возрастные группы">
                             <Grid Margin="4">
-                                <lvc:CartesianChart Series="{Binding AgeSeries}"
-                                                    MinHeight="220">
+                                <lvc:CartesianChart Series="{Binding AgeSeries}">
                                     <lvc:CartesianChart.AxisX>
                                         <lvc:Axis Labels="{Binding AgeLabels}"/>
                                     </lvc:CartesianChart.AxisX>
+                                    <lvc:CartesianChart.AxisY>
+                                        <lvc:Axis LabelFormatter="{Binding AgeFormatter}"/>
+                                    </lvc:CartesianChart.AxisY>
                                 </lvc:CartesianChart>
+
                             </Grid>
                         </TabItem>
 
                         <!-- Доход / расход -->
                         <TabItem Header="Доход / расход">
                             <Grid Margin="4">
-                                <lvc:CartesianChart Series="{Binding FinanceSeries}"
-                                                    MinHeight="220">
+                                <lvc:CartesianChart Series="{Binding FinanceSeries}">
                                     <lvc:CartesianChart.AxisX>
                                         <lvc:Axis Labels="{Binding FinanceLabels}"/>
                                     </lvc:CartesianChart.AxisX>
+                                    <lvc:CartesianChart.AxisY>
+                                        <lvc:Axis LabelFormatter="{Binding FinanceFormatter}"/>
+                                    </lvc:CartesianChart.AxisY>
                                 </lvc:CartesianChart>
+
                             </Grid>
                         </TabItem>
 
                         <!-- Количество визитов -->
                         <TabItem Header="Количество визитов">
                             <Grid Margin="4">
-                                <lvc:CartesianChart Series="{Binding VisitsCountSeries}"
-                                                    MinHeight="220">
+                                <lvc:CartesianChart Series="{Binding VisitsCountSeries}">
                                     <lvc:CartesianChart.AxisX>
                                         <lvc:Axis Labels="{Binding VisitsLabels}"/>
                                     </lvc:CartesianChart.AxisX>
+                                    <lvc:CartesianChart.AxisY>
+                                        <lvc:Axis LabelFormatter="{Binding VisitsFormatter}"/>
+                                    </lvc:CartesianChart.AxisY>
                                 </lvc:CartesianChart>
+
                             </Grid>
                         </TabItem>
                     </TabControl>

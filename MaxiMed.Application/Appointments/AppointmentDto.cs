@@ -24,5 +24,13 @@ namespace MaxiMed.Application.Appointments
         public string? BranchName { get; set; }
         public string? DoctorName { get; set; }
         public string? PatientName { get; set; }
+        public string StatusText => Status switch
+        {
+            AppointmentStatus.Planned => "Запланирована",
+            AppointmentStatus.Canceled => "Отменена",
+            AppointmentStatus.Completed => "Завершена",
+            _ => Status.ToString()
+        };
+
     }
 }
