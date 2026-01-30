@@ -33,10 +33,12 @@ namespace MaxiMed.Wpf.ViewModels.Invoices
 
         // ----- редактирование выбранного платежа
         [ObservableProperty] private PaymentDto? selectedPayment;
-        [ObservableProperty] private DateTime selectedPaymentDate;
+        [ObservableProperty] private DateTime selectedPaymentDate = DateTime.Today;
 
         [ObservableProperty] private string? errorText;
         [ObservableProperty] private bool isBusy;
+
+        
 
         public InvoiceViewModel(IInvoiceService service) => _service = service;
 
@@ -51,6 +53,7 @@ namespace MaxiMed.Wpf.ViewModels.Invoices
         {
             AppointmentId = apptId;
             await ReloadAsync();
+            
         }
 
         private async Task ReloadAsync()
@@ -71,6 +74,7 @@ namespace MaxiMed.Wpf.ViewModels.Invoices
 
             Payments.Clear();
             foreach (var p in dto.Payments) Payments.Add(p);
+            
         }
 
         [RelayCommand]
@@ -104,7 +108,7 @@ namespace MaxiMed.Wpf.ViewModels.Invoices
         private async Task UpdateSelectedPaymentDateAsync()
         {
             if (SelectedPayment is null) return;
-
+            SelectedPayment.PaidAt = DateTime.Today;
             try
             {
                 ErrorText = null;

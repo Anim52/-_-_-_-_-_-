@@ -1,4 +1,5 @@
 ﻿using MaxiMed.Domain.Common;
+using System.Text.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ namespace MaxiMed.Domain.Entities
     public class User : Entity<int>
     {
         public string Login { get; set; } = null!;
+        [JsonIgnore]
         public string PasswordHash { get; set; } = null!;
         public string? FullName { get; set; }
         public bool IsActive { get; set; } = true;
@@ -21,6 +23,7 @@ namespace MaxiMed.Domain.Entities
     public class Role : Entity<int>
     {
         public string Name { get; set; } = null!;
+        [JsonIgnore]
         public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     }
 
@@ -29,6 +32,7 @@ namespace MaxiMed.Domain.Entities
         public int UserId { get; set; }
         public int RoleId { get; set; }
 
+        [JsonIgnore]
         public User User { get; set; } = null!;
         public Role Role { get; set; } = null!;
     }

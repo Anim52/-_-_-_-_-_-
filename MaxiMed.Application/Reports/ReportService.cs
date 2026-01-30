@@ -18,39 +18,49 @@ namespace MaxiMed.Application.Reports
 
         // 1️⃣ Визиты
         public async Task<IReadOnlyList<VisitsReportRowDto>> GetVisitsAsync(
-            DateTime fromDate,
-            DateTime toDate,
-            CancellationToken ct = default)
+     DateTime fromDate,
+     DateTime toDate,
+     CancellationToken ct = default)
         {
             await using var db = await _dbFactory.CreateDbContextAsync(ct);
 
-            var from = fromDate;
-            var to = toDate;
+            var from = fromDate.Date;
+            var toExclusive = toDate.Date.AddDays(1);
 
-            // Берём приёмы за период + подцепляем доктора/пациента/счёт
-            var query = db.Appointments
+            // Берём визиты, которые пересекаются с диапазоном
+            var query = db.Visits
                 .AsNoTracking()
-                .Include(a => a.Doctor)
-                .Include(a => a.Patient)
-                .Include(a => a.Invoice)
-                .Where(a => a.StartAt >= from && a.StartAt <= to)
-                .Select(a => new VisitsReportRowDto
+                .Include(v => v.Appointment)
+                    .ThenInclude(a => a.Doctor)
+                .Include(v => v.Appointment)
+                    .ThenInclude(a => a.Patient)
+                .Include(v => v.Appointment)
+                    .ThenInclude(a => a.Invoice)
+                .Where(v =>
+                    v.OpenedAt < toExclusive &&
+                    (v.ClosedAt == null || v.ClosedAt >= from))
+                .Select(v => new VisitsReportRowDto
                 {
-                    Date = a.StartAt,
-                    Doctor = a.Doctor.FullName,
-                    Patient = a.Patient.LastName + " " + a.Patient.FirstName,
-                    Status = a.Status == AppointmentStatus.Planned
+                   
+                    Date = v.OpenedAt,
+
+                    Doctor = v.Appointment.Doctor.FullName,
+                    Patient = v.Appointment.Patient.LastName + " " + v.Appointment.Patient.FirstName,
+
+                    Status = v.Appointment.Status == AppointmentStatus.Planned
                         ? "Запланирована"
-                        : a.Status == AppointmentStatus.Canceled
+                        : v.Appointment.Status == AppointmentStatus.Canceled
                             ? "Отменена"
-                            : a.Status == AppointmentStatus.Completed
+                            : v.Appointment.Status == AppointmentStatus.Completed
                                 ? "Завершена"
-                                : a.Status.ToString(),
-                    Total = a.Invoice != null
-                        ? (a.Invoice.TotalAmount - a.Invoice.DiscountAmount)
+                                : v.Appointment.Status.ToString(),
+
+                    Total = v.Appointment.Invoice != null
+                        ? (v.Appointment.Invoice.TotalAmount - v.Appointment.Invoice.DiscountAmount)
                         : 0m,
-                    Paid = a.Invoice != null
-                        ? a.Invoice.PaidAmount
+
+                    Paid = v.Appointment.Invoice != null
+                        ? v.Appointment.Invoice.PaidAmount
                         : 0m
                 });
 
@@ -59,21 +69,25 @@ namespace MaxiMed.Application.Reports
                 .ToListAsync(ct);
         }
 
+
         // 2️⃣ Выручка
         public async Task<IReadOnlyList<RevenueReportRowDto>> GetRevenueAsync(
-            DateTime from,
-            DateTime to,
-            CancellationToken ct = default)
+    DateTime from,
+    DateTime to,
+    CancellationToken ct = default)
         {
             await using var db = await _dbFactory.CreateDbContextAsync(ct);
 
+            var fromDt = from.Date;
+            var toExclusive = to.Date.AddDays(1);
+
             return await db.Invoices.AsNoTracking()
-                .Where(i => i.CreatedAt >= from && i.CreatedAt <= to)
+                .Where(i => i.CreatedAt >= fromDt && i.CreatedAt < toExclusive)
                 .GroupBy(i => i.CreatedAt.Date)
                 .Select(g => new RevenueReportRowDto
                 {
                     Date = g.Key,
-                    Total = g.Sum(x => x.TotalAmount),
+                    Total = g.Sum(x => x.TotalAmount - x.DiscountAmount),
                     Paid = g.Sum(x => x.PaidAmount)
                 })
                 .OrderBy(x => x.Date)
@@ -82,26 +96,33 @@ namespace MaxiMed.Application.Reports
 
         // 3️⃣ По врачам
         public async Task<IReadOnlyList<DoctorReportRowDto>> GetDoctorsAsync(
-            DateTime from,
-            DateTime to,
-            CancellationToken ct = default)
+    DateTime from,
+    DateTime to,
+    CancellationToken ct = default)
         {
             await using var db = await _dbFactory.CreateDbContextAsync(ct);
 
-            return await db.Appointments.AsNoTracking()
-                .Where(a => a.StartAt >= from && a.StartAt <= to)
-                .Include(a => a.Doctor)
-                .GroupBy(a => a.Doctor.FullName)
+            var fromDt = from.Date;
+            var toExclusive = to.Date.AddDays(1);
+
+            return await db.Visits.AsNoTracking()
+                .Include(v => v.Appointment)
+                    .ThenInclude(a => a.Doctor)
+                .Where(v =>
+                    v.OpenedAt < toExclusive &&
+                    (v.ClosedAt == null || v.ClosedAt >= fromDt))
+                .GroupBy(v => v.Appointment.Doctor.FullName)
                 .Select(g => new DoctorReportRowDto
                 {
                     Doctor = g.Key,
                     VisitsCount = g.Count(),
-                    Revenue = g.Sum(a =>
-                        a.Invoice != null ? a.Invoice.PaidAmount : 0m)
+                    Revenue = g.Sum(v =>
+                        v.Appointment.Invoice != null ? v.Appointment.Invoice.PaidAmount : 0m)
                 })
                 .OrderByDescending(x => x.VisitsCount)
                 .ToListAsync(ct);
         }
+
 
         // 4️⃣ Сводка по пациентам (повторные, пол, возраст)
         public async Task<PatientStatsReportDto> GetPatientStatsAsync(CancellationToken ct = default)
@@ -222,26 +243,19 @@ namespace MaxiMed.Application.Reports
         {
             await using var db = await _dbFactory.CreateDbContextAsync();
 
+            var fromDt = from.Date;
+            var toExclusive = to.Date.AddDays(1);
+
             var invoices = await db.Invoices
                 .AsNoTracking()
-                .Where(i => i.CreatedAt >= from && i.CreatedAt <= to)
+                .Where(i => i.CreatedAt >= fromDt && i.CreatedAt < toExclusive)
+                .Select(i => new { i.TotalAmount, i.DiscountAmount, i.PaidAmount })
                 .ToListAsync();
 
-            if (invoices.Count == 0)
-            {
-                return new SummaryReportDto
-                {
-                    Income = 0m,
-                    Expense = 0m,
-                    AvgCheck = 0m,
-                    Debts = 0m,
-                    VisitsCount = 0
-                };
-            }
-
-            var total = invoices.Sum(i => i.TotalAmount - i.DiscountAmount);
+            var accrued = invoices.Sum(i => i.TotalAmount - i.DiscountAmount);
             var paid = invoices.Sum(i => i.PaidAmount);
-            var debts = total - paid;
+            var debts = accrued - paid;
+
             var count = invoices.Count;
             var avg = count > 0 ? paid / count : 0m;
 
@@ -254,6 +268,8 @@ namespace MaxiMed.Application.Reports
                 VisitsCount = count
             };
         }
+
+
 
         // 7️⃣ Возраст отдельно
         public async Task<IReadOnlyList<AgeStatRowDto>> GetAgeStatsAsync(CancellationToken ct = default)

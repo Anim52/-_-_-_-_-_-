@@ -12,8 +12,8 @@ using MaxiMed.Application.Services;
 using MaxiMed.Application.Users;
 using MaxiMed.Application.Visits;
 using MaxiMed.Domain.Entities;
-using MaxiMed.Infrastructure.Data;
 using MaxiMed.Wpf.Services;
+using MaxiMed.Wpf.Api;
 using MaxiMed.Wpf.ViewModels;
 using MaxiMed.Wpf.ViewModels.Admin;
 using MaxiMed.Wpf.ViewModels.Appointments;
@@ -42,7 +42,6 @@ using MaxiMed.Wpf.Views.Schedule;
 using MaxiMed.Wpf.Views.Services;
 using MaxiMed.Wpf.Views.Specialties;
 using MaxiMed.Wpf.Views.Visits;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -59,65 +58,43 @@ public partial class App : System.Windows.Application
         AppHost = Host.CreateDefaultBuilder()
             .ConfigureServices((context, services) =>
             {
-                services.AddDbContextFactory<MaxiMedDbContext>(options =>
-       options.UseSqlServer(context.Configuration.GetConnectionString("Default")));
+                // === API client ===
+                services.AddHttpClient<ApiClient>((sp, http) =>
+                {
+                    var cfg = sp.GetRequiredService<IConfiguration>();
+                    var baseUrl = cfg["Api:BaseUrl"] ?? "http://localhost:5087/";
+                    if (!baseUrl.EndsWith("/")) baseUrl += "/";
+                    http.BaseAddress = new Uri(baseUrl);
+                });
 
-                services.AddScoped<IPatientService, PatientService>();
+                // === Application services via Web API ===
+                services.AddSingleton<IAuthService, AuthApiService>();
+                services.AddSingleton<IPatientService, PatientsApiService>();
+                services.AddSingleton<IPatientHistoryService, PatientHistoryApiService>();
+                services.AddSingleton<IDoctorService, DoctorsApiService>();
+                services.AddSingleton<IBranchService, BranchesApiService>();
+                services.AddSingleton<ISpecialtyService, SpecialtiesApiService>();
+                services.AddSingleton<IDiagnosisService, DiagnosesApiService>();
+                services.AddSingleton<IServiceService, ServiceApiService>();
+                services.AddSingleton<IAppointmentService, AppointmentsApiService>();
+                services.AddSingleton<IAppointmentServicesService, AppointmentServicesApiService>();
+                services.AddSingleton<IAppointmentServiceItemService, AppointmentServiceItemApiService>();
+                services.AddSingleton<IVisitService, VisitsApiService>();
+                services.AddSingleton<IVisitDiagnosisService, VisitDiagnosisApiService>();
+                services.AddSingleton<IPrescriptionService, PrescriptionApiService>();
+                services.AddSingleton<IInvoiceService, InvoiceApiService>();
+                services.AddSingleton<IAttachmentService, AttachmentsApiService>();
+                services.AddSingleton<IAuditService, AuditApiService>();
+                services.AddSingleton<IReportService, ReportApiService>();
+                services.AddSingleton<IUserService, UserApiService>();
+                services.AddSingleton<IUserAdminService, UserAdminApiService>();
+                services.AddSingleton<IDoctorDayOffService, DoctorDayOffApiService>();
 
-                services.AddScoped<IPatientHistoryService, PatientHistoryService>();
-
-                services.AddScoped<IPrescriptionService, PrescriptionService>();
-
-                services.AddScoped<IInvoiceService, InvoiceService>();
-
-                services.AddScoped<IUserAdminService, UserAdminService>();
-
-                services.AddScoped<IInvoiceService, InvoiceService>();
-
-                services.AddScoped<IServiceService, ServiceService>();
-
+                // === Local (WPF-only) services ===
                 services.AddSingleton<ISessionService, SessionService>();
-
-                services.AddScoped<IAuthService, AuthService>();
-
-                services.AddScoped<IReportService, ReportService>();
-
-                services.AddSingleton<IAppointmentService, AppointmentsService>();
-
                 services.AddSingleton<INavigationService, NavigationService>();
-
-                services.AddSingleton<IDoctorService, DoctorService>();
-
-                services.AddScoped<IDiagnosisService, DiagnosisService>();
-
-                services.AddSingleton<IPatientService, PatientService>();
-
                 services.AddSingleton<IExcelExportService, ExcelExportService>();
-
                 services.AddSingleton<IAuthFlowService, AuthFlowService>();
-
-                services.AddScoped<IVisitDiagnosisService, VisitDiagnosisService>();
-
-                services.AddScoped<IPaymentService, PaymentService>();
-
-                services.AddScoped<IAuditService, AuditService>();
-
-                services.AddScoped<IAppointmentServiceItemService, AppointmentServiceItemService>();
-
-                services.AddScoped<IAppointmentServicesService, AppointmentServicesService>();
-
-                services.AddScoped<IAttachmentService, AttachmentService>();
-
-                services.AddScoped<IAppointmentServiceItemService, AppointmentServiceItemService>();
-                
-                services.AddScoped<IUserService, UserService>();
-
-                services.AddScoped<IDoctorDayOffService, DoctorDayOffService>();
-
-                services.AddScoped<IVisitService, VisitService>();
-
-                services.AddSingleton<IBranchService, BranchService>();
-                services.AddSingleton<ISpecialtyService, SpecialtyService>();
 
                 services.AddTransient<PatientsViewModel>();
                 services.AddTransient<PatientsPage>();
@@ -215,13 +192,6 @@ public partial class App : System.Windows.Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         await AppHost.StartAsync();
-
-        using (var scope = AppHost.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<MaxiMedDbContext>();
-            db.Database.Migrate();
-            await DbInitializer.SeedAsync(db);
-        }
 
         var authFlow = AppHost.Services.GetRequiredService<IAuthFlowService>();
         var ok = await authFlow.LoginAndShowMainAsync();
