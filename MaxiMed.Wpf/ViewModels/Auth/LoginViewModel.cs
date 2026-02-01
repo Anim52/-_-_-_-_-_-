@@ -4,9 +4,12 @@ using MaxiMed.Application.Auth;
 using MaxiMed.Domain.Entities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using static System.Net.WebRequestMethods;
 
 namespace MaxiMed.Wpf.ViewModels.Auth
 {
@@ -21,10 +24,18 @@ namespace MaxiMed.Wpf.ViewModels.Auth
         [ObservableProperty] private bool isBusy;
 
         public LoginViewModel(IAuthService auth) => _auth = auth;
+        public bool HasError => !string.IsNullOrWhiteSpace(ErrorText);
+
+        partial void OnErrorTextChanged(string value)
+            => OnPropertyChanged(nameof(HasError));
+
 
         [RelayCommand]
         private async Task LoginAsync(string password)
         {
+            MessageBox.Show("OnLoginClick fired");
+
+
             if (IsBusy) return;
 
             try

@@ -1,13 +1,12 @@
 ﻿using MaxiMed.Domain.Entities;
 using MaxiMed.Wpf.ViewModels;
+using MaxiMed.Wpf.ViewModels.Auth;
 using MaxiMed.Wpf.Views;
 using MaxiMed.Wpf.Views.Auth;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace MaxiMed.Wpf.Services
 {
@@ -22,17 +21,15 @@ namespace MaxiMed.Wpf.Services
             _session = session;
         }
 
-        public async Task<bool> LoginAndShowMainAsync()
+        public Task<bool> LoginAndShowMainAsync()
         {
-            // показываем логин
-            var login = _sp.GetRequiredService<LoginWindow>();
-            var ok = login.ShowDialog() == true;
-            if (!ok) return false;
+            // 1) логин через VM + DialogResult
+            var user = ShowLoginDialogAndGetUser();
+            if (user is null) return Task.FromResult(false);
 
-            var user = (User)login.Tag!;
             _session.SetUser(user);
 
-            // создаём НОВОЕ главное окно (Transient)
+            // 2) новое главное окно
             var main = _sp.GetRequiredService<MainWindow>();
             System.Windows.Application.Current.MainWindow = main;
 
@@ -42,49 +39,69 @@ namespace MaxiMed.Wpf.Services
             main.Show();
             main.Activate();
 
-            return true;
+            return Task.FromResult(true);
         }
 
-        public  Task LogoutToLoginAsync()
+        public Task LogoutToLoginAsync()
         {
-            // 1) чистим сессию
             _session.Clear();
 
-            // 2) закрываем текущее главное окно (но НЕ делаем Shutdown!)
             var oldMain = System.Windows.Application.Current.MainWindow;
-            oldMain?.Hide();   // вместо Close, чтобы не ловить "после закрытия"
-                               // oldMain?.Close(); // можно, но тогда надо следить за shutdownmode
+            oldMain?.Hide();
 
-            // 3) показываем логин
-            var login = _sp.GetRequiredService<LoginWindow>();
-            var ok = login.ShowDialog() == true;
-
-            if (!ok)
+            var user = ShowLoginDialogAndGetUser();
+            if (user is null)
             {
-                // пользователь нажал "Отмена" — тогда выходим из приложения
                 System.Windows.Application.Current.Shutdown();
                 return Task.CompletedTask;
             }
 
-            var user = (User)login.Tag;
             _session.SetUser(user);
 
-            // 4) открываем новое главное окно
             var main = _sp.GetRequiredService<MainWindow>();
             System.Windows.Application.Current.MainWindow = main;
-            main.Show();
-            main.Activate();
 
-            // 5) обновляем права/кнопки
             if (main.DataContext is MainWindowViewModel mvm)
                 mvm.RefreshPermissions();
 
-            // 6) старое окно закрываем, если оно было
+            main.Show();
+            main.Activate();
+
             if (oldMain is not null)
                 oldMain.Close();
 
             return Task.CompletedTask;
         }
+
+        private User? ShowLoginDialogAndGetUser()
+        {
+            var loginWindow = _sp.GetRequiredService<LoginWindow>();
+            var loginVm = _sp.GetRequiredService<LoginViewModel>();
+
+            loginWindow.DataContext = loginVm;
+
+            User? resultUser = null;
+
+            // важно: подписка ДО ShowDialog
+            loginVm.LoginSucceeded += user =>
+            {
+                resultUser = user;
+                loginWindow.DialogResult = true; // завершит ShowDialog()
+                loginWindow.Close();
+            };
+
+            // пользователь нажал “Отмена” (или закрыл окно)
+            var ok = loginWindow.ShowDialog() == true;
+
+            // на всякий случай отписаться (чтобы не копились подписки)
+            loginVm.LoginSucceeded -= user =>
+            {
+                resultUser = user;
+                loginWindow.DialogResult = true;
+                loginWindow.Close();
+            };
+
+            return ok ? resultUser : null;
+        }
     }
 }
-

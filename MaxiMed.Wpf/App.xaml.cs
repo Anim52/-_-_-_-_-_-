@@ -46,6 +46,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Windows;
+using MaxiMed.Wpf.ViewModels.Theme;
+using MaxiMed.Wpf.Views.Themes;
 
 namespace MaxiMed.Wpf;
 
@@ -102,6 +104,8 @@ public partial class App : System.Windows.Application
                 services.AddTransient<MainWindowViewModel>();
                 services.AddTransient<MainWindow>();
 
+                services.AddTransient<SettingsViewModel>();
+                services.AddTransient<SettingsPage>();
 
                 services.AddTransient<PatientEditViewModel>();
                 services.AddTransient<PatientEditWindow>();

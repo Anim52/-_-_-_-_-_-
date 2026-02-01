@@ -15,6 +15,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Remove="Resources\Theme\ThemeAccentBlue.xaml" />
+    <Page Remove="Resources\Theme\ThemeDark.xaml" />
+    <Page Remove="Resources\Theme\ThemeLight.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="LiveCharts.Wpf" Version="0.9.7" />
@@ -35,6 +41,18 @@
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Theme\ThemeAccentBlue.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Resource>
+    <Resource Include="Resources\Theme\ThemeDark.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Resource>
+    <Resource Include="Resources\Theme\ThemeLight.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>

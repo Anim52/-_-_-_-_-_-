@@ -5,7 +5,21 @@
              xmlns:converters="clr-namespace:MaxiMed.Wpf.Converters"
              ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
-        <converters:BoolToFreeBusyBrushConverter x:Key="BoolToFreeBusyBrush"/>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                
+                <ResourceDictionary Source="/Resources/Theme/ThemeAccentBlue.xaml"/>
+
+                <ResourceDictionary Source="/Resources/Theme/ThemeLight.xaml"/>
+
+                <ResourceDictionary Source="/Resources/Theme/Controls.xaml"/>
+
+            </ResourceDictionary.MergedDictionaries>
+
+            <converters:BoolToFreeBusyBrushConverter x:Key="BoolToFreeBusyBrush"/>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+            
+        </ResourceDictionary>
     </Application.Resources>
+    
 </Application>

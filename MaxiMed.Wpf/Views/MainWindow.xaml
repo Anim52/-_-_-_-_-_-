@@ -8,7 +8,7 @@
         Title="MaxiMed"
         Height="800"
         Width="1400"
-        Background="#F5F7FB"
+        Background="{DynamicResource BgBrush}"
         FontFamily="Segoe UI"
         TextElement.FontSize="13"
         SnapsToDevicePixels="True"
@@ -34,6 +34,100 @@
                           BlurRadius="28"
                           ShadowDepth="8"
                           Opacity="0.14"/>
+        <Style x:Key="S_NavToggle" TargetType="ToggleButton">
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Bd"
+        Background="{TemplateBinding Background}"
+        CornerRadius="10">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            </Border.RenderTransform>
+                            <Border.RenderTransformOrigin>0.5,0.5</Border.RenderTransformOrigin>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4"/>
+                                    <ColumnDefinition Width="22"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Акцентная полоска слева -->
+                                <Border x:Name="ActiveBar"
+                Grid.Column="0"
+                Background="Transparent"
+                CornerRadius="10,0,0,10"/>
+
+                                <!-- Иконка -->
+                                <Viewbox Grid.Column="1" Width="16" Height="16" Margin="6,0,0,0" VerticalAlignment="Center">
+                                    <ContentPresenter x:Name="IconPresenter" Content="{TemplateBinding Tag}"/>
+                                </Viewbox>
+
+                                <!-- Текст -->
+                                <ContentPresenter Grid.Column="2"
+                          Margin="10,0,8,0"
+                          VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+
+                        <ControlTemplate.Triggers>
+                            <!-- Hover -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource NavHoverBg}"/>
+                            </Trigger>
+
+
+                            <!-- Active -->
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentSoftBrush}"/>
+                                <Setter TargetName="ActiveBar" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                            <EventTrigger RoutedEvent="MouseEnter">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Bd"
+                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                             To="1.02" Duration="0:0:0.10"/>
+                                        <DoubleAnimation Storyboard.TargetName="Bd"
+                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                             To="1.02" Duration="0:0:0.10"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+
+                            <EventTrigger RoutedEvent="MouseLeave">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Bd"
+                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                             To="1" Duration="0:0:0.10"/>
+                                        <DoubleAnimation Storyboard.TargetName="Bd"
+                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                             To="1" Duration="0:0:0.10"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <!-- Общий стиль для пунктов меню -->
         <Style x:Key="S_NavButton" TargetType="Button">
@@ -43,7 +137,8 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="{StaticResource B_Text}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -78,7 +173,9 @@
                                 <Setter TargetName="Bd" Property="Background" Value="#12000000"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="Bd" Property="Opacity" Value="0.55"/>
+                                <Setter TargetName="Bd" Property="Background"
+        Value="{DynamicResource ControlBgHover}"/>
+
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -133,9 +230,13 @@
         <Geometry x:Key="I_Report">M6,20 v-14 h12 v14 M9,16 v-6 M12,16 v-3 M15,16 v-8</Geometry>
         <Geometry x:Key="I_Admin">M12,4 l7,4 v6 c0,4-3,7-7,8 c-4-1-7-4-7-8 v-6 z</Geometry>
         <Geometry x:Key="I_Exit">M10,7 v-2 h10 v14 h-10 v-2 M10,12 h-6 M6,12 l3,-3 M6,12 l3,3</Geometry>
+        <Geometry x:Key="I_Settings">
+            M19.14,12.94a7.49,7.49,0,0,0,.05-.94,7.49,7.49,0,0,0-.05-.94l2.03-1.58a.5.5,0,0,0,.12-.64l-1.92-3.32a.5.5,0,0,0-.6-.22l-2.39.96a7.28,7.28,0,0,0-1.63-.94l-.36-2.54A.5.5,0,0,0,13.9,1H10.1a.5.5,0,0,0-.49.42L9.25,3.96a7.28,7.28,0,0,0-1.63.94l-2.39-.96a.5.5,0,0,0-.6.22L2.71,7.48a.5.5,0,0,0,.12.64L4.86,9.7a7.49,7.49,0,0,0-.05.94,7.49,7.49,0,0,0,.05.94L2.83,14.16a.5.5,0,0,0-.12.64l1.92,3.32a.5.5,0,0,0,.6.22l2.39-.96a7.28,7.28,0,0,0,1.63.94l.36,2.54a.5.5,0,0,0,.49.42h3.8a.5.5,0,0,0,.49-.42l.36-2.54a7.28,7.28,0,0,0,1.63-.94l2.39.96a.5.5,0,0,0,.6-.22l1.92-3.32a.5.5,0,0,0-.12-.64ZM12,15.5A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z
+        </Geometry>
+
 
         <Style x:Key="S_IconPath" TargetType="Path">
-            <Setter Property="Stroke" Value="{StaticResource B_SubText}"/>
+            <Setter Property="Stroke" Value="{DynamicResource TextSecondary}"/>
             <Setter Property="StrokeThickness" Value="1.8"/>
             <Setter Property="StrokeStartLineCap" Value="Round"/>
             <Setter Property="StrokeEndLineCap" Value="Round"/>
@@ -149,8 +250,9 @@
         <!-- Левый сайдбар -->
         <Border DockPanel.Dock="Left"
                 Width="280"
-                Background="{StaticResource B_SidebarBg}"
-                BorderBrush="{StaticResource B_Border}"
+                Background="{DynamicResource CardBrush}"
+BorderBrush="{DynamicResource BorderBrushHard}"
+
                 BorderThickness="0,0,1,0">
 
             <Grid Margin="14">
@@ -170,8 +272,7 @@
                         </Border>
 
                         <StackPanel>
-                            <TextBlock Text="MaxiMed" FontSize="20" FontWeight="Bold" Foreground="{StaticResource B_Text}"/>
-                            
+                            <TextBlock Text="MaxiMed" Foreground="{DynamicResource TextPrimary}"/>
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
@@ -180,128 +281,149 @@
                 <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Margin="0,2,0,0">
 
-                        <Button Content="Пациенты"
-                                Style="{StaticResource S_NavButton}"
+                        <ToggleButton Content="Пациенты"
+                                Style="{StaticResource S_NavToggle}"
                                 Command="{Binding OpenPatientsCommand}"
                                 Visibility="{Binding CanSeePatients, Converter={StaticResource BoolToVisibility}}"
+                                IsChecked="{Binding IsPatientsActive,Mode=TwoWay}"
                                 Margin="0,0,0,8">
-                            <Button.Tag>
+                            <ToggleButton.Tag>
                                 <Path Data="{StaticResource I_Users}" Style="{StaticResource S_IconPath}"/>
-                            </Button.Tag>
-                        </Button>
+                            </ToggleButton.Tag>
+                        </ToggleButton>
 
-                        <Button Content="Врачи"
-                                Style="{StaticResource S_NavButton}"
+                        <ToggleButton Content="Врачи"
+                                Style="{StaticResource S_NavToggle}"
                                 Command="{Binding OpenDoctorsCommand}"
                                 Visibility="{Binding CanSeeDoctors, Converter={StaticResource BoolToVisibility}}"
+                                IsChecked="{Binding IsDoctorsActive ,Mode=TwoWay}"
                                 Margin="0,0,0,8">
-                            <Button.Tag>
+                            <ToggleButton.Tag>
                                 <Path Data="{StaticResource I_Doctor}" Style="{StaticResource S_IconPath}"/>
-                            </Button.Tag>
-                        </Button>
+                            </ToggleButton.Tag>
+                        </ToggleButton>
 
-                        <Button Content="Специализации"
-                                Style="{StaticResource S_NavButton}"
+                        <ToggleButton Content="Специализации"
+                                Style="{StaticResource S_NavToggle}"
                                 Command="{Binding OpenSpecialtiesCommand}"
                                 Visibility="{Binding CanSeeSpecialties, Converter={StaticResource BoolToVisibility}}"
+                                IsChecked="{Binding IsSpecialtiesActive  ,Mode=TwoWay}"                                     
                                 Margin="0,0,0,8">
-                            <Button.Tag>
+                            <ToggleButton.Tag>
                                 <Path Data="{StaticResource I_List}" Style="{StaticResource S_IconPath}"/>
-                            </Button.Tag>
-                        </Button>
+                            </ToggleButton.Tag>
+                        </ToggleButton>
 
-                        <Button Content="Филиалы"
-                                Style="{StaticResource S_NavButton}"
+                        <ToggleButton Content="Филиалы"
+                                Style="{StaticResource S_NavToggle}"
                                 Command="{Binding OpenBranchesCommand}"
                                 Visibility="{Binding CanOpenBranches, Converter={StaticResource BoolToVisibility}}"
+                                IsChecked="{Binding IsBranchesActive ,Mode=TwoWay}"
                                 Margin="0,0,0,8">
-                            <Button.Tag>
+                            <ToggleButton.Tag>
                                 <Path Data="{StaticResource I_Building}" Style="{StaticResource S_IconPath}"/>
-                            </Button.Tag>
-                        </Button>
+                            </ToggleButton.Tag>
+                        </ToggleButton>
 
-                        <Button Content="Записи (день)"
-                                Style="{StaticResource S_NavButton}"
+                        <ToggleButton Content="Записи (день)"
+                                Style="{StaticResource S_NavToggle}"
                                 Command="{Binding OpenAppointmentsCommand}"
                                 Visibility="{Binding CanSeeAppointments, Converter={StaticResource BoolToVisibility}}"
+                                IsChecked="{Binding IsAppointmentsActive ,Mode=TwoWay}"
                                 Margin="0,0,0,8">
-                            <Button.Tag>
+                            <ToggleButton.Tag>
                                 <Path Data="{StaticResource I_Calendar}" Style="{StaticResource S_IconPath}"/>
-                            </Button.Tag>
-                        </Button>
+                            </ToggleButton.Tag>
+                        </ToggleButton>
 
-                        <Button Content="Расписание (день)"
-                                Style="{StaticResource S_NavButton}"
+                        <ToggleButton Content="Расписание (день)"
+                                Style="{StaticResource S_NavToggle}"
                                 Command="{Binding OpenScheduleCommand}"
                                 Visibility="{Binding CanSeeScheduleDay, Converter={StaticResource BoolToVisibility}}"
+                                IsChecked="{Binding IsScheduleActive  ,Mode=TwoWay}"
                                 Margin="0,0,0,8">
-                            <Button.Tag>
+                            <ToggleButton.Tag>
                                 <Path Data="{StaticResource I_Clock}" Style="{StaticResource S_IconPath}"/>
-                            </Button.Tag>
-                        </Button>
+                            </ToggleButton.Tag>
+                        </ToggleButton>
 
-                        <Button Content="Неделя врача"
-                                Style="{StaticResource S_NavButton}"
+                        <ToggleButton Content="Неделя врача"
+                                Style="{StaticResource S_NavToggle}"
                                 Command="{Binding OpenWeekScheduleCommand}"
                                 Visibility="{Binding CanSeeWeekSchedule, Converter={StaticResource BoolToVisibility}}"
+                                IsChecked="{Binding IsWeekScheduleActive  ,Mode=TwoWay}"
                                 Margin="0,0,0,8">
-                            <Button.Tag>
+                            <ToggleButton.Tag>
                                 <Path Data="{StaticResource I_Calendar}" Style="{StaticResource S_IconPath}"/>
-                            </Button.Tag>
-                        </Button>
+                            </ToggleButton.Tag>
+                        </ToggleButton>
 
-                        <Button Content="Свободное время"
-                                Style="{StaticResource S_NavButton}"
+                        <ToggleButton Content="Свободное время"
+                                Style="{StaticResource S_NavToggle}"
                                 Command="{Binding OpenFreeSlotsCommand}"
                                 Visibility="{Binding CanSeeFreeSlots, Converter={StaticResource BoolToVisibility}}"
+                                IsChecked="{Binding IsFreeSlotsActive  ,Mode=TwoWay}"
                                 Margin="0,0,0,8">
-                            <Button.Tag>
+                            <ToggleButton.Tag>
                                 <Path Data="{StaticResource I_Clock}" Style="{StaticResource S_IconPath}"/>
-                            </Button.Tag>
-                        </Button>
+                            </ToggleButton.Tag>
+                        </ToggleButton>
 
-                        <Button Content="Диагнозы"
-                                Style="{StaticResource S_NavButton}"
+                        <ToggleButton Content="Диагнозы"
+                                Style="{StaticResource S_NavToggle}"
                                 Command="{Binding OpenDiagnosesCommand}"
                                 Visibility="{Binding CanSeeDiagnoses, Converter={StaticResource BoolToVisibility}}"
+                                IsChecked="{Binding IsDiagnosesActive  ,Mode=TwoWay}"
                                 Margin="0,0,0,8">
-                            <Button.Tag>
+                            <ToggleButton.Tag>
                                 <Path Data="{StaticResource I_List}" Style="{StaticResource S_IconPath}"/>
-                            </Button.Tag>
-                        </Button>
+                            </ToggleButton.Tag>
+                        </ToggleButton>
 
-                        <Button Content="Услуги"
-                                Style="{StaticResource S_NavButton}"
+                        <ToggleButton Content="Услуги"
+                                Style="{StaticResource S_NavToggle}"
                                 Command="{Binding OpenServicesCommand}"
                                 Visibility="{Binding CanSeeServices, Converter={StaticResource BoolToVisibility}}"
+                                      IsChecked="{Binding IsServicesActive  ,Mode=TwoWay}"
                                 Margin="0,0,0,8">
-                            <Button.Tag>
+                            <ToggleButton.Tag>
                                 <Path Data="{StaticResource I_List}" Style="{StaticResource S_IconPath}"/>
-                            </Button.Tag>
-                        </Button>
+                            </ToggleButton.Tag>
+                        </ToggleButton>
 
-                        <Button Content="Отчеты"
-                                Style="{StaticResource S_NavButton}"
+                        <ToggleButton Content="Отчеты"
+                                Style="{StaticResource S_NavToggle}"
                                 Command="{Binding OpenReportsCommand}"
                                 Visibility="{Binding CanSeeReports, Converter={StaticResource BoolToVisibility}}"
+                                IsChecked="{Binding IsReportsActive  ,Mode=TwoWay}"
                                 Margin="0,0,0,8">
-                            <Button.Tag>
+                            <ToggleButton.Tag>
                                 <Path Data="{StaticResource I_Report}" Style="{StaticResource S_IconPath}"/>
-                            </Button.Tag>
-                        </Button>
+                            </ToggleButton.Tag>
+                        </ToggleButton>
 
                         <Separator Margin="0,10,0,10"
                                    Visibility="{Binding CanSeeAdminPanel, Converter={StaticResource BoolToVisibility}}"/>
 
-                        <Button Content="Администрирование"
-                                Style="{StaticResource S_NavButton}"
+                        <ToggleButton Content="Администрирование"
+                                Style="{StaticResource S_NavToggle}"
                                 Command="{Binding OpenAdminCommand}"
                                 Visibility="{Binding CanSeeAdminPanel, Converter={StaticResource BoolToVisibility}}"
+                                IsChecked="{Binding IsAdminActive  ,Mode=TwoWay}"
                                 Margin="0,0,0,8">
-                            <Button.Tag>
+                            <ToggleButton.Tag>
                                 <Path Data="{StaticResource I_Admin}" Style="{StaticResource S_IconPath}"/>
-                            </Button.Tag>
-                        </Button>
+                            </ToggleButton.Tag>
+                        </ToggleButton>
+                        <ToggleButton Content="Настройки"
+                                Style="{StaticResource S_NavToggle}"
+                                Command="{Binding OpenSettingsCommand}"
+                                IsChecked="{Binding IsSettingsActive  ,Mode=TwoWay}"
+                                Margin="0,0,0,8">
+                            <ToggleButton.Tag>
+                                <Path Data="{StaticResource I_Settings}" Style="{StaticResource S_IconPath}"/>
+                            </ToggleButton.Tag>
+                        </ToggleButton>
 
                     </StackPanel>
                 </ScrollViewer>
@@ -333,15 +455,21 @@
 
         <!-- Контентная зона -->
         <Grid Margin="18">
-            <Border Background="White"
-                    CornerRadius="16"
-                    BorderBrush="#10E2E8F0"
-                    BorderThickness="1"
-                    Effect="{StaticResource E_SoftShadow}">
+            <Border x:Name="ContentHost"
+        Background="{DynamicResource CardBrush}"
+        CornerRadius="16"
+        BorderBrush="{DynamicResource BorderBrushHard}"
+        BorderThickness="1"
+        Effect="{StaticResource E_SoftShadow}">
+                <Border.RenderTransform>
+                    <TranslateTransform Y="0"/>
+                </Border.RenderTransform>
+
                 <Frame x:Name="MainFrame"
-                       NavigationUIVisibility="Hidden"
-                       Background="Transparent"/>
+           NavigationUIVisibility="Hidden"
+           Background="Transparent"/>
             </Border>
+
         </Grid>
 
     </DockPanel>
