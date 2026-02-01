@@ -1,15 +1,14 @@
-﻿<Page x:Class="MaxiMed.Wpf.Views.Themes.SettingsPage"
+<Page x:Class="MaxiMed.Wpf.Views.Themes.SettingsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:MaxiMed.Wpf.Views.Themes"
-      mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      mc:Ignorable="d"
+      d:DesignHeight="600" d:DesignWidth="900"
       Title="SettingsPage">
 
-    <ScrollViewer>
-        <StackPanel Margin="24" Width="520">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" Width="640">
 
             <TextBlock Text="Настройки"
                        FontSize="22"
@@ -17,6 +16,7 @@
                        Foreground="{DynamicResource TextPrimary}"
                        Margin="0 0 0 16"/>
 
+            <!-- Appearance -->
             <Border Style="{StaticResource Card}" Margin="0 0 0 16">
                 <StackPanel>
                     <TextBlock Text="Внешний вид"
@@ -39,11 +39,37 @@
 
                     <ComboBox ItemsSource="{Binding Accents}"
                               SelectedItem="{Binding SelectedAccent}"
-                              Height="36"/>
+                              Height="{DynamicResource UiControlHeight}"/>
+
+                    <TextBlock Text="Плотность интерфейса"
+                               Foreground="{DynamicResource TextSecondary}"
+                               Margin="0 12 0 4"/>
+
+                    <ComboBox ItemsSource="{Binding Densities}"
+                              SelectedItem="{Binding SelectedDensity}"
+                              Height="{DynamicResource UiControlHeight}"/>
+
+                    <TextBlock Text="Скругление углов"
+                               Foreground="{DynamicResource TextSecondary}"
+                               Margin="0 12 0 4"/>
+
+                    <ComboBox ItemsSource="{Binding CornerRadii}"
+                              SelectedItem="{Binding SelectedCornerRadius}"
+                              Height="{DynamicResource UiControlHeight}"/>
+
+                    <TextBlock Text="{Binding BaseFontSize, StringFormat=Размер шрифта: {0:F0}}"
+                               Foreground="{DynamicResource TextSecondary}"
+                               Margin="0 12 0 4"/>
+
+                    <Slider Minimum="11" Maximum="16"
+                            Value="{Binding BaseFontSize}"
+                            TickFrequency="1"
+                            IsSnapToTickEnabled="True"/>
                 </StackPanel>
             </Border>
 
-            <Border Style="{StaticResource Card}">
+            <!-- Behaviour -->
+            <Border Style="{StaticResource Card}" Margin="0 0 0 16">
                 <StackPanel>
                     <TextBlock Text="Поведение"
                                FontSize="16"
@@ -52,9 +78,63 @@
                                Margin="0 0 0 12"/>
 
                     <CheckBox Content="Включить анимации"
-          IsChecked="{Binding AnimationsEnabled}"
-          Foreground="{DynamicResource TextPrimary}" />
+                              Foreground="{DynamicResource TextPrimary}"
+                              IsChecked="{Binding AnimationsEnabled}"
+                              Margin="0 0 0 6"/>
 
+                    <TextBlock Text="Скорость анимаций"
+                               Foreground="{DynamicResource TextSecondary}"
+                               Margin="0 8 0 4"/>
+
+                    <ComboBox ItemsSource="{Binding AnimationSpeeds}"
+                              SelectedItem="{Binding SelectedAnimationSpeed}"
+                              Height="{DynamicResource UiControlHeight}"/>
+
+                    <CheckBox Content="Подтверждать опасные действия (удаление и т.п.)"
+                              Foreground="{DynamicResource TextPrimary}"
+                              IsChecked="{Binding ConfirmDestructiveActions}"
+                              Margin="0 12 0 6"/>
+
+                    <CheckBox Content="Запоминать последнюю открытую страницу"
+                              Foreground="{DynamicResource TextPrimary}"
+                              IsChecked="{Binding RememberLastPage}"
+                              Margin="0 0 0 6"/>
+
+                    <TextBlock Text="Стартовая страница"
+                               Foreground="{DynamicResource TextSecondary}"
+                               Margin="0 8 0 4"/>
+
+                    <ComboBox ItemsSource="{Binding StartPages}"
+                              SelectedItem="{Binding SelectedStartPage}"
+                              Height="{DynamicResource UiControlHeight}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Connection -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Подключение"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimary}"
+                               Margin="0 0 0 12"/>
+
+                    <TextBlock Text="{Binding ApiBaseUrl, StringFormat=API: {0}}"
+                               Foreground="{DynamicResource TextSecondary}"
+                               Margin="0 0 0 10"/>
+
+                    <DockPanel>
+                        <TextBlock Text="{Binding ApiStatus, StringFormat=Статус: {0}}"
+                                   Foreground="{DynamicResource TextPrimary}"
+                                   VerticalAlignment="Center"/>
+
+                        <Button DockPanel.Dock="Right"
+                                Style="{StaticResource PrimaryButton}"
+                                Content="Проверить"
+                                Command="{Binding CheckApiCommand}"
+                                Margin="12,0,0,0"
+                                Height="{DynamicResource UiControlHeight}"/>
+                    </DockPanel>
                 </StackPanel>
             </Border>
 

@@ -197,7 +197,8 @@ public partial class App : System.Windows.Application
     {
         await AppHost.StartAsync();
 
-        var authFlow = AppHost.Services.GetRequiredService<IAuthFlowService>();
+        ThemeService.Initialize();
+var authFlow = AppHost.Services.GetRequiredService<IAuthFlowService>();
         var ok = await authFlow.LoginAndShowMainAsync();
         if (!ok)
         {

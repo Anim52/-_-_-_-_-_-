@@ -14,7 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using static MaxiMed.Wpf.Services.ThemeService;
+
 
 namespace MaxiMed.Wpf.Views
 {
@@ -32,7 +32,7 @@ namespace MaxiMed.Wpf.Views
         }
         private void PlayPageTransition()
         {
-            if (!UiOptions.AnimationsEnabled)
+            if (!ThemeService.Options.AnimationsEnabled)
             {
                 ContentHost.Opacity = 1;
                 return;

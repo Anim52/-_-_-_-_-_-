@@ -52,4 +52,19 @@ public sealed class ApiClient
         var body = await res.Content.ReadAsStringAsync();
         throw new InvalidOperationException($"API error {(int)res.StatusCode} {res.ReasonPhrase}: {body}");
     }
+
+
+    public async Task<bool> TryPingAsync(string url, CancellationToken ct = default)
+    {
+        try
+        {
+            using var req = new HttpRequestMessage(HttpMethod.Get, url);
+            var res = await _http.SendAsync(req, ct);
+            return true; // reachable (even if 404)
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

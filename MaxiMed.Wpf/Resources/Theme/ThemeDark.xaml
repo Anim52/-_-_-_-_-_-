@@ -18,8 +18,8 @@
 	<!-- controls -->
 	<Color x:Key="ControlBgColor">#FF2B2D31</Color>
 	<Color x:Key="ControlHoverColor">#FF3A3C41</Color>
-
-	<SolidColorBrush x:Key="BgBrush" Color="{StaticResource BgColor}"/>
+    <SolidColorBrush x:Key="NavActiveBg" Color="#26FFFFFF"/>
+    <SolidColorBrush x:Key="BgBrush" Color="{StaticResource BgColor}"/>
 	<SolidColorBrush x:Key="SidebarBrush" Color="{StaticResource SidebarColor}"/>
 	<SolidColorBrush x:Key="CardBrush" Color="{StaticResource CardColor}"/>
 	<SolidColorBrush x:Key="BorderBrushHard" Color="{StaticResource BorderColor}"/>

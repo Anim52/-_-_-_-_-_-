@@ -34,9 +34,13 @@ namespace MaxiMed.Wpf.Services
             System.Windows.Application.Current.MainWindow = main;
 
             if (main.DataContext is MainWindowViewModel mvm)
+            {
                 mvm.RefreshPermissions();
+                mvm.NavigateInitial();
+            }
 
             main.Show();
+
             main.Activate();
 
             return Task.FromResult(true);

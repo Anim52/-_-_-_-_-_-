@@ -40,7 +40,7 @@ namespace MaxiMed.Wpf.ViewModels
         public bool CanSeePatients => IsAdmin || IsRegistrar;
         public bool CanSeeAppointments => IsAdmin || IsRegistrar || IsDoctor;
         public bool CanSeeWeekSchedule => IsAdmin || IsDoctor;
-        public bool CanSeeFreeSlots => IsAdmin || IsRegistrar; 
+        public bool CanSeeFreeSlots => IsAdmin || IsRegistrar;
         public bool CanSeeAdminPanel => IsAdmin;
         public bool CanSeeDoctors => IsAdmin;
         public bool CanSeeScheduleDay => IsAdmin || IsDoctor;
@@ -51,7 +51,7 @@ namespace MaxiMed.Wpf.ViewModels
         #endregion
         private readonly IServiceProvider _sp;
 
-        public MainWindowViewModel(INavigationService nav, ISessionService session, IServiceProvider sp,IAuthFlowService authFlow)
+        public MainWindowViewModel(INavigationService nav, ISessionService session, IServiceProvider sp, IAuthFlowService authFlow)
         {
             _nav = nav;
             _session = session;
@@ -59,7 +59,7 @@ namespace MaxiMed.Wpf.ViewModels
             _authFlow = authFlow;
         }
         #region PropertyesOpen
-        public bool CanSeeReports =>_session.IsInRole("Admin") || _session.IsInRole("Manager");
+        public bool CanSeeReports => _session.IsInRole("Admin") || _session.IsInRole("Manager");
         private bool CanOpenPatients() => CanSeePatients;
         private bool CanOpenDoctors() => CanSeeDoctors;
         private bool CanOpenAppointments() => CanSeeAppointments;
@@ -301,6 +301,56 @@ namespace MaxiMed.Wpf.ViewModels
             }
         }
 
+
+
+
+
+        public void NavigateInitial()
+        {
+            // Prefer last page if enabled, else StartPage, else Patients
+            var key = ThemeService.Options.RememberLastPage && !string.IsNullOrWhiteSpace(ThemeService.Options.LastPage)
+                ? ThemeService.Options.LastPage
+                : (ThemeService.Options.StartPage ?? "Patients");
+
+            switch (key)
+            {
+                case nameof(PatientsPage): // in case saved type name
+                case "Patients":
+                    OpenPatientsCommand.Execute(null);
+                    break;
+                case nameof(AppointmentsPage):
+                case "Appointments":
+                    OpenAppointmentsCommand.Execute(null);
+                    break;
+                case nameof(DoctorSchedulePage):
+                case "Schedule":
+                    OpenScheduleCommand.Execute(null);
+                    break;
+                case nameof(WeekSchedulePage):
+                case "WeekSchedule":
+                    OpenWeekScheduleCommand.Execute(null);
+                    break;
+                case nameof(FreeSlotsPage):
+                case "FreeSlots":
+                    OpenFreeSlotsCommand.Execute(null);
+                    break;
+                case nameof(ReportsPage):
+                case "Reports":
+                    OpenReportsCommand.Execute(null);
+                    break;
+                case nameof(AdminPage):
+                case "Admin":
+                    OpenAdminCommand.Execute(null);
+                    break;
+                case nameof(SettingsPage):
+                case "Settings":
+                    OpenSettingsCommand.Execute(null);
+                    break;
+                default:
+                    OpenPatientsCommand.Execute(null);
+                    break;
+            }
+        }
 
     }
 }

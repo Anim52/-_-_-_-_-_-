@@ -145,7 +145,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ListViewItem">
                         <Border x:Name="Bd"
-                                Background="White"
+                                Background="{DynamicResource CardBrush}"
                                 BorderBrush="#10E2E8F0"
                                 BorderThickness="1"
                                 CornerRadius="12"

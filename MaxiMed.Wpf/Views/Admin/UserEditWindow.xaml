@@ -216,7 +216,7 @@
 
                     <TextBlock Text="Новый пароль" Style="{StaticResource S_Label}"/>
 
-                    <Border BorderBrush="{StaticResource B_Border}" BorderThickness="1" CornerRadius="10" Background="White" Margin="0,0,0,8">
+                    <Border BorderBrush="{StaticResource B_Border}" BorderThickness="1" CornerRadius="10" Background="{DynamicResource CardBrush}" Margin="0,0,0,8">
                         <PasswordBox x:Name="Pwd" Padding="12,8" BorderThickness="0" Background="Transparent"/>
                     </Border>
 

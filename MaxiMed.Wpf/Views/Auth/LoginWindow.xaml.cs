@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using MaxiMed.Domain.Entities;
 using MaxiMed.Wpf.ViewModels.Auth;
+using MaxiMed.Wpf.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using static MaxiMed.Wpf.Services.ThemeService;
+
 
 namespace MaxiMed.Wpf.Views.Auth
 {
@@ -32,7 +33,7 @@ namespace MaxiMed.Wpf.Views.Auth
 
             Loaded += (_, __) =>
             {
-                if (!UiOptions.AnimationsEnabled) return;
+                if (!ThemeService.Options.AnimationsEnabled) return;
 
                 Card.Opacity = 0;
                 ((System.Windows.Media.TranslateTransform)Card.RenderTransform).Y = 10;

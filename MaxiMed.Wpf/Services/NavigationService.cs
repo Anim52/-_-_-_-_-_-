@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using MaxiMed.Wpf.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,13 @@ namespace MaxiMed.Wpf.Services
             if (_frame is null) throw new InvalidOperationException("Frame не задан. Вызови SetFrame()");
             var page = _sp.GetRequiredService<TPage>();
             _frame.Navigate(page);
-        }
+
+            if (ThemeService.Options.RememberLastPage)
+            {
+                ThemeService.Options.LastPage = typeof(TPage).Name;
+                ThemeService.Options.Save();
+            }
+}
         public void Navigate(Page page)
         {
             _frame?.Navigate(page);

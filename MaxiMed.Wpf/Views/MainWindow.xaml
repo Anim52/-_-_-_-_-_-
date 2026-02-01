@@ -8,28 +8,13 @@
         Title="MaxiMed"
         Height="800"
         Width="1400"
-        Background="{DynamicResource BgBrush}"
+       Background="{DynamicResource BgBrush}"
         FontFamily="Segoe UI"
         TextElement.FontSize="13"
         SnapsToDevicePixels="True"
         Icon="/Resources/Image/Image.ico">
 
     <Window.Resources>
-        <!-- Базовые цвета -->
-        <Color x:Key="C_Primary">#2563EB</Color>
-        <Color x:Key="C_PrimaryDark">#1D4ED8</Color>
-        <Color x:Key="C_Text">#0F172A</Color>
-        <Color x:Key="C_SubText">#64748B</Color>
-        <Color x:Key="C_Border">#E2E8F0</Color>
-        <Color x:Key="C_SidebarBg">#FFFFFF</Color>
-
-        <SolidColorBrush x:Key="B_Primary" Color="{StaticResource C_Primary}"/>
-        <SolidColorBrush x:Key="B_PrimaryDark" Color="{StaticResource C_PrimaryDark}"/>
-        <SolidColorBrush x:Key="B_Text" Color="{StaticResource C_Text}"/>
-        <SolidColorBrush x:Key="B_SubText" Color="{StaticResource C_SubText}"/>
-        <SolidColorBrush x:Key="B_Border" Color="{StaticResource C_Border}"/>
-        <SolidColorBrush x:Key="B_SidebarBg" Color="{StaticResource C_SidebarBg}"/>
-
         <DropShadowEffect x:Key="E_SoftShadow"
                           BlurRadius="28"
                           ShadowDepth="8"
@@ -250,8 +235,8 @@
         <!-- Левый сайдбар -->
         <Border DockPanel.Dock="Left"
                 Width="280"
-                Background="{DynamicResource CardBrush}"
-BorderBrush="{DynamicResource BorderBrushHard}"
+               Background="{DynamicResource SidebarBrush}"
+        BorderBrush="{DynamicResource BorderBrushHard}"
 
                 BorderThickness="0,0,1,0">
 
@@ -266,7 +251,7 @@ BorderBrush="{DynamicResource BorderBrushHard}"
                 <!-- Шапка -->
                 <StackPanel Grid.Row="0">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Width="42" Height="42" CornerRadius="12" Background="#EFF6FF" Margin="0,0,12,0">
+                        <Border Width="42" Height="42" CornerRadius="12" Background="{DynamicResource AccentSoftBrush}" Margin="0,0,12,0">
                             <Image Source="/Resources/Image/Image.png"
                                    Stretch="Uniform"/>
                         </Border>
@@ -456,9 +441,9 @@ BorderBrush="{DynamicResource BorderBrushHard}"
         <!-- Контентная зона -->
         <Grid Margin="18">
             <Border x:Name="ContentHost"
-        Background="{DynamicResource CardBrush}"
-        CornerRadius="16"
+       Background="{DynamicResource CardBrush}"
         BorderBrush="{DynamicResource BorderBrushHard}"
+        CornerRadius="16"
         BorderThickness="1"
         Effect="{StaticResource E_SoftShadow}">
                 <Border.RenderTransform>
