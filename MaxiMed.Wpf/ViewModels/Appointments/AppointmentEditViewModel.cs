@@ -20,7 +20,7 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
         [ObservableProperty] private int id;
         [ObservableProperty] private string title = "Запись";
         private int _patientSearchVersion;
-
+        private bool _isInitializingDefaultSlot;
 
         public List<LookupItemDto> Doctors { get; private set; } = new();
         public List<LookupItemDto> Branches { get; private set; } = new();
@@ -137,17 +137,110 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
 
                 var dto = ToDto();
 
-                if (dto.Id == 0)
-                    Id = await _service.CreateAsync(dto);
-                else
-                    await _service.UpdateAsync(dto);
+                try
+                {
+                    if (dto.Id == 0)
+                        Id = await _service.CreateAsync(dto);
+                    else
+                        await _service.UpdateAsync(dto);
 
-                RequestClose?.Invoke(true);
+                    RequestClose?.Invoke(true);
+                }
+                catch (Exception ex) when (
+                    ex.Message.Contains("У врача уже есть запись") ||
+                    ex.Message.Contains("Пациент уже записан"))
+                {
+                    await TryMoveToNearestFreeSlotAsync(dto);
+
+                    ErrorText = $"Выбранное время занято. Подставлено ближайшее свободное: {dto.StartAt:dd.MM.yyyy HH:mm} - {dto.EndAt:HH:mm}";
+                }
             }
             catch (Exception ex)
             {
                 ErrorText = ex.Message;
             }
+        }
+        private async Task TryMoveToNearestFreeSlotAsync(AppointmentDto dto)
+        {
+            var duration = dto.EndAt - dto.StartAt;
+            if (duration <= TimeSpan.Zero)
+                duration = TimeSpan.FromMinutes(30);
+
+            var slots = await _service.FindFreeSlotsAsync(
+                dto.DoctorId,
+                dto.StartAt.Date,
+                dto.StartAt.Date.AddDays(7),
+                maxResults: 100);
+
+            var free = slots
+                .Where(s => s.StartAt >= dto.StartAt)
+                .FirstOrDefault(s => (s.EndAt - s.StartAt) >= duration);
+
+            if (free is null)
+                throw new InvalidOperationException("Нет свободного времени для записи.");
+
+            dto.StartAt = free.StartAt;
+            dto.EndAt = free.StartAt.Add(duration);
+
+            Date = dto.StartAt.Date;
+            StartTimeText = dto.StartAt.ToString("HH:mm");
+            EndTimeText = dto.EndAt.ToString("HH:mm");
+        }
+        private async Task ApplyNearestFreeSlotAsync(CancellationToken ct = default)
+        {
+            if (DoctorId <= 0 || Date is null)
+                return;
+
+            var day = Date.Value.Date;
+
+            var slots = await _service.FindFreeSlotsAsync(
+                DoctorId,
+                day,
+                day,
+                maxResults: 50,
+                ct);
+
+            var free = slots
+                .Where(s => s.StartAt >= day)
+                .OrderBy(s => s.StartAt)
+                .FirstOrDefault();
+
+            if (free is null)
+            {
+                ErrorText = "На выбранную дату нет свободного времени.";
+                return;
+            }
+
+            StartTimeText = free.StartAt.ToString("HH:mm");
+            EndTimeText = free.EndAt.ToString("HH:mm");
+            ErrorText = null;
+        }
+
+        public async Task InitDefaultSlotAsync(CancellationToken ct = default)
+        {
+            if (_isInitializingDefaultSlot)
+                return;
+
+            try
+            {
+                _isInitializingDefaultSlot = true;
+                await ApplyNearestFreeSlotAsync(ct);
+            }
+            finally
+            {
+                _isInitializingDefaultSlot = false;
+            }
+        }
+        partial void OnDoctorIdChanged(int value)
+        {
+            if (Id == 0 && !_isInitializingDefaultSlot)
+                _ = InitDefaultSlotAsync();
+        }
+
+        partial void OnDateChanged(DateTime? value)
+        {
+            if (Id == 0 && !_isInitializingDefaultSlot)
+                _ = InitDefaultSlotAsync();
         }
     }
 }

@@ -282,6 +282,7 @@ namespace MaxiMed.Application.Appointments
             await using var db = await _dbFactory.CreateDbContextAsync(ct);
 
             await EnsureNoDoctorOverlap(db, dto, ct);
+            await EnsureNoPatientOverlap(db, dto, ct);
 
             var a = new Appointment
             {
@@ -304,6 +305,7 @@ namespace MaxiMed.Application.Appointments
             await using var db = await _dbFactory.CreateDbContextAsync(ct);
 
             await EnsureNoDoctorOverlap(db, dto, ct);
+            await EnsureNoPatientOverlap(db, dto, ct);
 
             var a = await db.Appointments.FirstOrDefaultAsync(x => x.Id == dto.Id, ct)
                 ?? throw new InvalidOperationException("Запись не найдена");
@@ -351,6 +353,18 @@ namespace MaxiMed.Application.Appointments
 
             if (exists)
                 throw new InvalidOperationException("У врача уже есть запись на это время (пересечение).");
+        }
+        private static async Task EnsureNoPatientOverlap(MaxiMedDbContext db, AppointmentDto dto, CancellationToken ct)
+        {
+            var exists = await db.Appointments.AsNoTracking()
+                .Where(a => a.PatientId == dto.PatientId)
+                .Where(a => a.Id != dto.Id)
+                .Where(a => a.Status != AppointmentStatus.Canceled)
+                .Where(a => a.StartAt < dto.EndAt && a.EndAt > dto.StartAt)
+                .AnyAsync(ct);
+
+            if (exists)
+                throw new InvalidOperationException("Пациент уже записан на это время.");
         }
     }
 }

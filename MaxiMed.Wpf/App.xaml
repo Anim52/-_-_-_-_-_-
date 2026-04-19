@@ -20,6 +20,7 @@
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
             
         </ResourceDictionary>
+        
     </Application.Resources>
     
 </Application>

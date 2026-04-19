@@ -325,13 +325,13 @@
                                 <DataTemplate>
                                     <StackPanel HorizontalAlignment="Center">
                                         <!-- День недели: пн, вт... -->
-                                        <TextBlock Text="{Binding Path=., StringFormat='{}{0:ddd}'}"
+                                        <TextBlock Text="{Binding Path=., StringFormat='{}{0:ddd}', ConverterCulture='ru-RU'}"
                                FontWeight="SemiBold"
                                Foreground="{StaticResource B_SubText}"
                                HorizontalAlignment="Center"/>
 
                                         <!-- Дата: 12.01 -->
-                                        <TextBlock Text="{Binding Path=., StringFormat='{}{0:dd.MM}'}"
+                                        <TextBlock Text="{Binding Path=., StringFormat='{}{0:dd.MM}', ConverterCulture='ru-RU'}"
                                FontWeight="Bold"
                                Foreground="{StaticResource B_Text}"
                                HorizontalAlignment="Center"/>

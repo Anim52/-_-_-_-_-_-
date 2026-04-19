@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MaxiMed.Wpf.Views.Invoices"
         xmlns:lookups="clr-namespace:MaxiMed.Domain.Lookups;assembly=MaxiMed.Domain"
-      
+      Icon="/Resources/Image/Image.ico"
         mc:Ignorable="d"
        Title="Счёт"
         Height="780"

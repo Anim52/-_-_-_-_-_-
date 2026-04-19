@@ -5,10 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MaxiMed.Wpf.Views"
         mc:Ignorable="d"
-        Title="MaxiMed"
+        Title=""
         Height="800"
         Width="1400"
-       Background="{DynamicResource BgBrush}"
+        Background="{DynamicResource BgBrush}"
         FontFamily="Segoe UI"
         TextElement.FontSize="13"
         SnapsToDevicePixels="True"
@@ -257,7 +257,7 @@
                         </Border>
 
                         <StackPanel>
-                            <TextBlock Text="MaxiMed" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text="Добро пожаловать" Foreground="{DynamicResource TextPrimary}"/>
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>

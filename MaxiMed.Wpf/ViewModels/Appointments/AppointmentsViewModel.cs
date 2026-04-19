@@ -26,7 +26,7 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
 
         public List<LookupItemDto> Doctors { get; private set; } = new();
 
-        [ObservableProperty] private DateTime? selectedDate = DateTime.Today;
+        [ObservableProperty] private DateTime? selectedDate;
         [ObservableProperty] private int? selectedDoctorId;
 
         [ObservableProperty] private AppointmentDto? selected;
@@ -53,6 +53,8 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
         {
             Doctors = (await _service.GetActiveDoctorsAsync()).ToList();
             OnPropertyChanged(nameof(Doctors));
+
+            SelectedDate = DateTime.Today;
             await LoadAsync();
         }
 
@@ -150,12 +152,22 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
             var vm = _sp.GetRequiredService<AppointmentEditViewModel>();
             await vm.InitAsync();
 
+            var day = (SelectedDate ?? DateTime.Today).Date;
+
             vm.LoadFrom(new AppointmentDto
             {
                 DoctorId = SelectedDoctorId ?? 0,
-                StartAt = (SelectedDate ?? DateTime.Today).Date.AddHours(10),
-                EndAt = (SelectedDate ?? DateTime.Today).Date.AddHours(10).AddMinutes(30),
+                StartAt = day.AddHours(9),
+                EndAt = day.AddHours(9).AddMinutes(30),
             }, "Новая запись");
+
+            if (vm.Branches.Count > 0 && vm.BranchId == 0)
+                vm.BranchId = vm.Branches[0].Id;
+
+            if (vm.Doctors.Count > 0 && vm.DoctorId == 0)
+                vm.DoctorId = vm.Doctors[0].Id;
+
+            await vm.InitDefaultSlotAsync();
 
             if (vm.Branches.Count > 0 && vm.BranchId == 0) vm.BranchId = vm.Branches[0].Id;
             if (vm.Doctors.Count > 0 && vm.DoctorId == 0) vm.DoctorId = vm.Doctors[0].Id;
@@ -200,6 +212,17 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
 
             await _service.DeleteAsync(Selected.Id);
             await LoadAsync();
+        }
+        partial void OnSelectedDateChanged(DateTime? value)
+        {
+            if (!IsBusy && value is not null)
+                _ = LoadAsync();
+        }
+
+        partial void OnSelectedDoctorIdChanged(int? value)
+        {
+            if (!IsBusy)
+                _ = LoadAsync();
         }
     }
 }

@@ -12,9 +12,10 @@ namespace MaxiMed.Application.Users
         public string Login { get; set; } = "";
         public string? FullName { get; set; }
         public bool IsActive { get; set; }
-        public string RolesText { get; set; } = "";
+        public string RolesText => Roles is null ? string.Empty : string.Join(", ", Roles);
         public DateTime CreatedAt { get; set; }
 
         public List<string> Roles { get; set; } = new();
+
     }
 }

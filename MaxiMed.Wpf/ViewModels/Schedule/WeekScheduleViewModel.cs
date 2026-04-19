@@ -41,7 +41,7 @@ namespace MaxiMed.Wpf.ViewModels.Schedule
         [ObservableProperty] private string? doctorTitle;
 
         public ObservableCollection<WeekRowVm> Rows { get; } = new();
-        public List<DateTime> Days { get; } = new();
+        public ObservableCollection<DateTime> Days { get; } = new();
 
         public WeekScheduleViewModel(
             IAppointmentService service,
@@ -287,6 +287,10 @@ namespace MaxiMed.Wpf.ViewModels.Schedule
         {
             SetWeekStart(WeekStart.AddDays(7));
             await LoadAsync();
+        }
+        partial void OnWeekStartChanged(DateTime value)
+        {
+            UpdateHeader();
         }
     }
 }

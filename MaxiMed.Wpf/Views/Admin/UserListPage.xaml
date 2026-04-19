@@ -231,7 +231,7 @@
                     <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="90"/>
                     <DataGridTextColumn Header="Логин" Binding="{Binding Login}" Width="200"/>
                     <DataGridTextColumn Header="ФИО" Binding="{Binding FullName}" Width="*"/>
-                    <DataGridTextColumn Header="Роли" Binding="{Binding Roles}" Width="260"/>
+                    <DataGridTextColumn Header="Роли" Binding="{Binding RolesText}" Width="260"/>
                     <DataGridCheckBoxColumn Header="Активен" Binding="{Binding IsActive}" Width="100"/>
                 </DataGrid.Columns>
             </DataGrid>

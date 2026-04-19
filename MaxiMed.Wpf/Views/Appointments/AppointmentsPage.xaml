@@ -259,13 +259,16 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <!-- Фильтры -->
                     <TextBlock Text="Дата" Style="{StaticResource S_FieldLabel}" Margin="0,0,6,0"/>
-                    <DatePicker Style="{StaticResource S_DatePicker}"
-                                SelectedDate="{Binding SelectedDate}"
-                                Width="150"
-                                Margin="0,0,10,0"/>
+                    <DatePicker 
+                        x:Name="DateFilterPicker"
+                        Style="{StaticResource S_DatePicker}"
+                        SelectedDate="{Binding SelectedDate, Mode=TwoWay}"
+                        Width="150"
+                        Margin="0,0,10,0"/>
 
                     <TextBlock Text="Врач" Style="{StaticResource S_FieldLabel}" Margin="0,0,6,0"/>
-                    <ComboBox Style="{StaticResource S_ComboBox}"
+                    <ComboBox x:Name="DoctorFilterCombo"
+                        Style="{StaticResource S_ComboBox}"
                               Width="260"
                               Margin="0,0,10,0"
                               ItemsSource="{Binding Doctors}"

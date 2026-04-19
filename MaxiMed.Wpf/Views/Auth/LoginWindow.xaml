@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Вход в MaxiMed"
+        Title="Вход "
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         Width="1020"
@@ -202,7 +202,7 @@ SizeToContent="Manual"
                                        FontSize="22"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource TextPrimary}"/>
-                            <TextBlock Text="Рады видеть вас снова в MaxiMed"
+                            <TextBlock Text="Рады видеть вас снова "
                                        Margin="0,4,0,0"
                                        Foreground="{DynamicResource TextSecondary}"/>
                         </StackPanel>
