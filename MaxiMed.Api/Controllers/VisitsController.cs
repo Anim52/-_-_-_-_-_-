@@ -83,6 +83,24 @@ public sealed class VisitsController : ControllerBase
         if (visit == null)
             return NotFound();
 
+        var diagnoses = visit.Diagnoses
+            .OrderByDescending(x => x.IsPrimary)
+            .ThenBy(x => x.Diagnosis.Code)
+            .Select(x => new
+            {
+                x.DiagnosisId,
+                x.Diagnosis.Code,
+                x.Diagnosis.Name,
+                x.IsPrimary
+            })
+            .ToList();
+
+        var diagnosisText = diagnoses.Count > 0
+            ? string.Join("; ", diagnoses.Select(x => string.IsNullOrWhiteSpace(x.Code)
+                ? x.Name
+                : $"{x.Code} {x.Name}"))
+            : visit.DiagnosisText;
+
         return Ok(new
         {
             visit.Id,
@@ -95,8 +113,10 @@ public sealed class VisitsController : ControllerBase
             Date = visit.Appointment.StartAt,
 
             visit.Complaints,
-            visit.DiagnosisText,
+            DiagnosisText = diagnosisText,
             visit.Recommendations,
+
+            Diagnoses = diagnoses,
 
             Prescriptions = visit.Prescriptions.Select(x => new
             {

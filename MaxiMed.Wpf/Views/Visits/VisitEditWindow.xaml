@@ -328,11 +328,47 @@
 
                 <!-- Диагноз -->
                 <Border Style="{StaticResource S_Card}" Padding="14" Margin="0,0,0,12">
-                    <StackPanel>
-                        <TextBlock Text="Диагноз (текст)" Style="{StaticResource S_SectionTitle}"/>
-                        <TextBlock Text="Свободное текстовое описание диагноза" Style="{StaticResource S_SectionSub}" Margin="0,2,0,10"/>
-                        <TextBox Style="{StaticResource S_Memo}" Height="110" Text="{Binding DiagnosisText}"/>
-                    </StackPanel>
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                            <TextBlock Text="Диагноз из базы" Style="{StaticResource S_SectionTitle}"/>
+                            <TextBlock Text="Выберите диагноз из таблицы диагнозов. Текстовое поле больше не используется."
+                                       Style="{StaticResource S_SectionSub}"
+                                       Margin="0,2,0,0"/>
+                        </StackPanel>
+
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+                            <Button Content="Добавить из базы…"
+                                    Style="{StaticResource S_ButtonPrimary}"
+                                    MinWidth="160"
+                                    Margin="0,0,10,0"
+                                    Command="{Binding AddDiagnosisCommand}"/>
+                            <Button Content="Сделать основным"
+                                    Style="{StaticResource S_ButtonSecondary}"
+                                    MinWidth="160"
+                                    Margin="0,0,10,0"
+                                    Command="{Binding SetPrimaryDiagnosisCommand}"/>
+                            <Button Content="Удалить"
+                                    Style="{StaticResource S_ButtonSecondary}"
+                                    MinWidth="120"
+                                    Command="{Binding RemoveDiagnosisCommand}"/>
+                        </StackPanel>
+
+                        <Border BorderBrush="#10E2E8F0" BorderThickness="1" CornerRadius="12" Padding="0">
+                            <DataGrid Style="{StaticResource S_DataGrid}"
+                                      ItemsSource="{Binding Diagnoses}"
+                                      SelectedItem="{Binding SelectedDiagnosis}"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True"
+                                      CanUserAddRows="False"
+                                      Height="180">
+                                <DataGrid.Columns>
+                                    <DataGridCheckBoxColumn Header="Основной" Binding="{Binding IsPrimary}" Width="100"/>
+                                    <DataGridTextColumn Header="Код" Binding="{Binding Code}" Width="140"/>
+                                    <DataGridTextColumn Header="Диагноз" Binding="{Binding Name}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+                    </DockPanel>
                 </Border>
 
                 <!-- Назначения -->

@@ -42,12 +42,16 @@ namespace MaxiMed.Application.Visits
             var exists = await db.VisitDiagnoses.AnyAsync(x => x.VisitId == visitId && x.DiagnosisId == diagnosisId, ct);
             if (exists) return;
 
-            if (isPrimary)
+            var hasPrimary = await db.VisitDiagnoses.AnyAsync(x => x.VisitId == visitId && x.IsPrimary, ct);
+
+            if (isPrimary || !hasPrimary)
             {
                 var primaries = await db.VisitDiagnoses
                     .Where(x => x.VisitId == visitId && x.IsPrimary)
                     .ToListAsync(ct);
                 foreach (var p in primaries) p.IsPrimary = false;
+
+                isPrimary = true;
             }
 
             db.VisitDiagnoses.Add(new VisitDiagnosis
@@ -67,8 +71,24 @@ namespace MaxiMed.Application.Visits
             var entity = await db.VisitDiagnoses.FirstOrDefaultAsync(x => x.VisitId == visitId && x.DiagnosisId == diagnosisId, ct);
             if (entity is null) return;
 
+            var wasPrimary = entity.IsPrimary;
+
             db.VisitDiagnoses.Remove(entity);
             await db.SaveChangesAsync(ct);
+
+            if (wasPrimary)
+            {
+                var nextPrimary = await db.VisitDiagnoses
+                    .Where(x => x.VisitId == visitId)
+                    .OrderBy(x => x.DiagnosisId)
+                    .FirstOrDefaultAsync(ct);
+
+                if (nextPrimary is not null)
+                {
+                    nextPrimary.IsPrimary = true;
+                    await db.SaveChangesAsync(ct);
+                }
+            }
         }
 
         public async Task SetPrimaryAsync(long visitId, int diagnosisId, CancellationToken ct = default)

@@ -80,6 +80,8 @@ namespace MaxiMed.Application.Visits
      .Include(x => x.Appointment)
          .ThenInclude(x => x.Patient)
      .Include(x => x.Doctor)
+     .Include(x => x.Diagnoses)
+         .ThenInclude(x => x.Diagnosis)
      .Include(x => x.Prescriptions)
      .FirstOrDefaultAsync(x => x.Id == id);
         }

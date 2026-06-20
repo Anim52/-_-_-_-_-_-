@@ -140,6 +140,59 @@ namespace MaxiMed.Wpf.ViewModels.Visits
 
             foreach (var x in list)
                 Diagnoses.Add(x);
+
+            DiagnosisText = BuildDiagnosisTextFromSelectedDiagnoses();
+        }
+
+        private string? BuildDiagnosisTextFromSelectedDiagnoses()
+        {
+            if (Diagnoses.Count == 0)
+                return null;
+
+            return string.Join("; ", Diagnoses
+                .OrderByDescending(x => x.IsPrimary)
+                .ThenBy(x => x.Code)
+                .Select(x => string.IsNullOrWhiteSpace(x.Code)
+                    ? x.Name
+                    : $"{x.Code} {x.Name}"));
+        }
+
+        [RelayCommand]
+        private async Task AddDiagnosisAsync()
+        {
+            if (VisitId <= 0)
+                return;
+
+            var win = _sp.GetRequiredService<DiagnosisPickerWindow>();
+            win.Owner = App.Current.MainWindow;
+
+            if (win.ShowDialog() != true || win.Result is null)
+                return;
+
+            var makePrimary = !Diagnoses.Any(x => x.IsPrimary);
+
+            await _visitDx.AddAsync(VisitId, win.Result.Id, makePrimary);
+            await ReloadDiagnosesAsync();
+        }
+
+        [RelayCommand]
+        private async Task RemoveDiagnosisAsync()
+        {
+            if (SelectedDiagnosis is null)
+                return;
+
+            await _visitDx.RemoveAsync(VisitId, SelectedDiagnosis.DiagnosisId);
+            await ReloadDiagnosesAsync();
+        }
+
+        [RelayCommand]
+        private async Task SetPrimaryDiagnosisAsync()
+        {
+            if (SelectedDiagnosis is null)
+                return;
+
+            await _visitDx.SetPrimaryAsync(VisitId, SelectedDiagnosis.DiagnosisId);
+            await ReloadDiagnosesAsync();
         }
 
         private async Task ReloadPrescriptionsAsync()
@@ -303,12 +356,16 @@ namespace MaxiMed.Wpf.ViewModels.Visits
                 ? string.Join(Environment.NewLine, data.Prescriptions.Select(x => $"- {x.Text}"))
                 : data.Recommendations;
 
+            var diagnosisForPrint = !string.IsNullOrWhiteSpace(data.DiagnosisText)
+                ? data.DiagnosisText
+                : BuildDiagnosisTextFromSelectedDiagnoses();
+
             PrintHelper.PrintPrescription(
                 string.IsNullOrWhiteSpace(data.PatientName) ? PatientName : data.PatientName,
                 string.IsNullOrWhiteSpace(data.DoctorName) ? DoctorName : data.DoctorName,
                 data.Date == default ? DateTime.Now : data.Date,
                 data.Complaints,
-                data.DiagnosisText,
+                diagnosisForPrint,
                 prescriptionText);
         }
 
@@ -321,7 +378,16 @@ namespace MaxiMed.Wpf.ViewModels.Visits
             public string? Complaints { get; set; }
             public string? DiagnosisText { get; set; }
             public string? Recommendations { get; set; }
+            public List<DiagnosisPrintDto> Diagnoses { get; set; } = new();
             public List<PrescriptionPrintDto> Prescriptions { get; set; } = new();
+        }
+
+        private sealed class DiagnosisPrintDto
+        {
+            public int DiagnosisId { get; set; }
+            public string Code { get; set; } = "";
+            public string Name { get; set; } = "";
+            public bool IsPrimary { get; set; }
         }
 
         private sealed class PrescriptionPrintDto
@@ -341,7 +407,7 @@ namespace MaxiMed.Wpf.ViewModels.Visits
                 Complaints = Complaints,
                 Anamnesis = Anamnesis,
                 Examination = Examination,
-                DiagnosisText = DiagnosisText,
+                DiagnosisText = BuildDiagnosisTextFromSelectedDiagnoses(),
                 Recommendations = Recommendations
             });
         }

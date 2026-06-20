@@ -229,12 +229,29 @@ namespace MaxiMed.Infrastructure.Data
                         Complaints = $"Жалобы пациента {i + 1}",
                         Anamnesis = $"Анамнез пациента {i + 1}",
                         Examination = $"Осмотр пациента {i + 1}",
-                        DiagnosisText = $"Предварительный диагноз {i + 1}",
                         Recommendations = $"Рекомендации пациенту {i + 1}"
                     })
                     .ToList();
 
                 db.Visits.AddRange(visits);
+                await db.SaveChangesAsync();
+            }
+
+            var visitsList = await db.Visits.ToListAsync();
+            var diagnosesList = await db.Diagnoses.ToListAsync();
+
+            if (!await db.VisitDiagnoses.AnyAsync() && visitsList.Count > 0 && diagnosesList.Count > 0)
+            {
+                var visitDiagnoses = visitsList
+                    .Select((visit, i) => new VisitDiagnosis
+                    {
+                        VisitId = visit.Id,
+                        DiagnosisId = diagnosesList[i % diagnosesList.Count].Id,
+                        IsPrimary = true
+                    })
+                    .ToList();
+
+                db.VisitDiagnoses.AddRange(visitDiagnoses);
                 await db.SaveChangesAsync();
             }
 
