@@ -1,4 +1,5 @@
 using MaxiMed.Application.Invoices;
+using MaxiMed.Domain.Entities;
 using MaxiMed.Domain.Lookups;
 
 namespace MaxiMed.Wpf.Api;
@@ -28,4 +29,8 @@ public sealed class InvoiceApiService : IInvoiceService
 
     public Task DeletePaymentAsync(long paymentId, CancellationToken ct = default)
         => _api.DeleteAsync($"api/invoices/payments/{paymentId}", ct);
+    public Task<Invoice?> GetByIdWithDetailsAsync(long id)
+    {
+        return _api.GetAsync<Invoice>($"api/invoices/{id}/print");
+    }
 }

@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaxiMed.Application.Auth;
 using MaxiMed.Domain.Entities;
@@ -33,8 +33,6 @@ namespace MaxiMed.Wpf.ViewModels.Auth
         [RelayCommand]
         private async Task LoginAsync(string password)
         {
-            MessageBox.Show("OnLoginClick fired");
-
 
             if (IsBusy) return;
 
@@ -65,7 +63,7 @@ namespace MaxiMed.Wpf.ViewModels.Auth
             }
             catch (Exception ex)
             {
-                ErrorText = ex.Message;
+                ErrorText = "Ошибка подключения к API: " + ex.Message;
             }
             finally
             {

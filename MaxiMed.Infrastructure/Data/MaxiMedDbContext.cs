@@ -1,5 +1,6 @@
 ﻿using MaxiMed.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -42,6 +43,103 @@ namespace MaxiMed.Infrastructure.Data
         public DbSet<UserRole> UserRoles => Set<UserRole>();   
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
         public DbSet<DoctorDayOff> DoctorDayOffs { get; set; } = null!;
+
+        public override int SaveChanges()
+        {
+            AddAutomaticAuditLogs();
+            return base.SaveChanges();
+        }
+
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        {
+            AddAutomaticAuditLogs();
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            AddAutomaticAuditLogs();
+            return base.SaveChangesAsync(cancellationToken);
+        }
+
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+        {
+            AddAutomaticAuditLogs();
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+
+        private void AddAutomaticAuditLogs()
+        {
+            ChangeTracker.DetectChanges();
+
+            var auditEntries = ChangeTracker.Entries()
+                .Where(e => e.Entity is not AuditLog &&
+                            e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+                .Select(CreateAuditLog)
+                .Where(x => x is not null)
+                .Cast<AuditLog>()
+                .ToList();
+
+            if (auditEntries.Count > 0)
+                AuditLogs.AddRange(auditEntries);
+        }
+
+        private static AuditLog? CreateAuditLog(EntityEntry entry)
+        {
+            var entityName = entry.Metadata.ClrType.Name;
+            var action = entry.State switch
+            {
+                EntityState.Added => "Create",
+                EntityState.Modified => "Update",
+                EntityState.Deleted => "Delete",
+                _ => null
+            };
+
+            if (action is null)
+                return null;
+
+            var key = entry.Properties.FirstOrDefault(p => p.Metadata.IsPrimaryKey());
+            var entityId = key?.CurrentValue?.ToString() ?? key?.OriginalValue?.ToString();
+
+            var changes = new Dictionary<string, object?>();
+
+            foreach (var property in entry.Properties)
+            {
+                var name = property.Metadata.Name;
+
+                if (string.Equals(name, "PasswordHash", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (property.Metadata.IsPrimaryKey())
+                    continue;
+
+                if (entry.State == EntityState.Added)
+                {
+                    changes[name] = property.CurrentValue;
+                }
+                else if (entry.State == EntityState.Deleted)
+                {
+                    changes[name] = property.OriginalValue;
+                }
+                else if (property.IsModified)
+                {
+                    changes[name] = new
+                    {
+                        Old = property.OriginalValue,
+                        New = property.CurrentValue
+                    };
+                }
+            }
+
+            return new AuditLog
+            {
+                Action = action,
+                Entity = entityName,
+                EntityId = entityId,
+                DetailsJson = System.Text.Json.JsonSerializer.Serialize(changes)
+            };
+        }
+
         protected override void OnModelCreating(ModelBuilder b)
         {
             b.Entity<DoctorDayOff>(b =>
@@ -73,6 +171,12 @@ namespace MaxiMed.Infrastructure.Data
             b.Entity<User>()
                 .HasIndex(x => x.Login)
                 .IsUnique();
+
+            b.Entity<User>()
+                .HasOne(x => x.Doctor)
+                .WithMany()
+                .HasForeignKey(x => x.DoctorId)
+                .OnDelete(DeleteBehavior.SetNull);
             // --- ClinicBranch
             b.Entity<ClinicBranch>(e =>
             {
@@ -141,6 +245,7 @@ namespace MaxiMed.Infrastructure.Data
                 e.Property(x => x.Room).HasMaxLength(20);
                 e.Property(x => x.Phone).HasMaxLength(30);
                 e.Property(x => x.Email).HasMaxLength(120);
+                e.Property(x => x.WorkShift).HasMaxLength(20).HasDefaultValue("AllDay");
 
                 e.HasOne(x => x.Specialty).WithMany(s => s.Doctors).HasForeignKey(x => x.SpecialtyId);
                 e.HasOne(x => x.Branch).WithMany(bc => bc.Doctors).HasForeignKey(x => x.BranchId);

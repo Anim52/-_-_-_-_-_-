@@ -2,11 +2,13 @@
   "profiles": {
     "MaxiMed.Api": {
       "commandName": "Project",
+      "dotnetRunMessages": true,
       "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "http://localhost:5087",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "https://localhost:58450;http://localhost:58451"
+      }
     }
   }
 }

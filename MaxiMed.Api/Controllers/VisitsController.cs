@@ -1,4 +1,5 @@
 using MaxiMed.Application.Visits;
+using MaxiMed.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MaxiMed.Api.Controllers;
@@ -73,5 +74,34 @@ public sealed class VisitsController : ControllerBase
     {
         await _rx.DeleteAsync(id, ct);
         return NoContent();
+    }
+    [HttpGet("{id:long}/print")]
+    public async Task<IActionResult> GetPrintData(long id)
+    {
+        var visit = await _visits.GetByIdWithDetailsAsync(id);
+
+        if (visit == null)
+            return NotFound();
+
+        return Ok(new
+        {
+            visit.Id,
+
+            PatientName = visit.Appointment.Patient.LastName + " " +
+                    visit.Appointment.Patient.FirstName + " " +
+                    visit.Appointment.Patient.MiddleName,
+
+            DoctorName = visit.Doctor.FullName,
+            Date = visit.Appointment.StartAt,
+
+            visit.Complaints,
+            visit.DiagnosisText,
+            visit.Recommendations,
+
+            Prescriptions = visit.Prescriptions.Select(x => new
+            {
+                x.Text
+            }).ToList()
+        });
     }
 }

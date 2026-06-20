@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaxiMed.Application.Appointments;
 using MaxiMed.Application.Common;
@@ -27,6 +27,9 @@ namespace MaxiMed.Wpf.ViewModels.Schedule
 
         public bool CanSetDayOff =>
             _session.IsInRole("Admin") || _session.IsInRole("Registrar");
+
+        public bool IsDoctorMode => _session.IsInRole("Doctor");
+        public bool IsNotDoctorMode => !IsDoctorMode;
 
         // 🔹 Выбранный день недели для пометки как нерабочий
         [ObservableProperty]
@@ -64,13 +67,23 @@ namespace MaxiMed.Wpf.ViewModels.Schedule
 
         public async Task InitAsync()
         {
-            Doctors = (await _service.GetActiveDoctorsAsync()).ToList();
-            OnPropertyChanged(nameof(Doctors));
-
-            if (Doctors.Count > 0)
-                SelectedDoctorId = Doctors[0].Id;
+            var doctors = (await _service.GetActiveDoctorsAsync()).ToList();
+            if (_session.IsInRole("Doctor"))
+            {
+                Doctors = _session.DoctorId.HasValue
+                    ? doctors.Where(d => d.Id == _session.DoctorId.Value).ToList()
+                    : new List<LookupItemDto>();
+                SelectedDoctorId = _session.DoctorId;
+            }
             else
-                SelectedDoctorId = null;
+            {
+                Doctors = doctors;
+                SelectedDoctorId = Doctors.Count > 0 ? Doctors[0].Id : null;
+            }
+
+            OnPropertyChanged(nameof(Doctors));
+            OnPropertyChanged(nameof(IsDoctorMode));
+            OnPropertyChanged(nameof(IsNotDoctorMode));
 
             SetWeekStart(DateTime.Today);
 
@@ -151,7 +164,11 @@ namespace MaxiMed.Wpf.ViewModels.Schedule
             if (SelectedDoctorId is null || SelectedDoctorId == 0)
                 return;
 
-            var doctorId = SelectedDoctorId.Value;
+            var doctorId = _session.IsInRole("Doctor")
+                ? (_session.DoctorId ?? -1)
+                : SelectedDoctorId.Value;
+
+            if (doctorId <= 0) return;
 
             // какие дни нерабочие
             var dayOffSet = new HashSet<DateTime>();
@@ -241,12 +258,15 @@ namespace MaxiMed.Wpf.ViewModels.Schedule
         {
             if (slot is null || !slot.IsFree) return;
 
+            var currentDoctorId = _session.IsInRole("Doctor") ? _session.DoctorId : SelectedDoctorId;
+            if (currentDoctorId is null || currentDoctorId <= 0) return;
+
             var vm = _sp.GetRequiredService<AppointmentEditViewModel>();
             await vm.InitAsync();
 
             vm.LoadFrom(new AppointmentDto
             {
-                DoctorId = SelectedDoctorId ?? 0,
+                DoctorId = currentDoctorId.Value,
                 StartAt = slot.StartAt,
                 EndAt = slot.EndAt
             }, "Новая запись");

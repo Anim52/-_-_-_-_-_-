@@ -28,6 +28,7 @@ namespace MaxiMed.Wpf.ViewModels.Doctors
         [ObservableProperty] private string? phone;
         [ObservableProperty] private string? email;
         [ObservableProperty] private bool isActive = true;
+        [ObservableProperty] private string workShift = "AllDay";
 
         [ObservableProperty] private string? errorText;
 
@@ -57,6 +58,7 @@ namespace MaxiMed.Wpf.ViewModels.Doctors
             Phone = dto.Phone;
             Email = dto.Email;
             IsActive = dto.IsActive;
+            WorkShift = string.IsNullOrWhiteSpace(dto.WorkShift) ? "AllDay" : dto.WorkShift;
 
             ErrorText = null;
         }
@@ -70,7 +72,8 @@ namespace MaxiMed.Wpf.ViewModels.Doctors
             Room = Room,
             Phone = Phone,
             Email = Email,
-            IsActive = IsActive
+            IsActive = IsActive,
+            WorkShift = WorkShift
         };
 
         [RelayCommand]

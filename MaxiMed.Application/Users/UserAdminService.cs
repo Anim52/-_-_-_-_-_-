@@ -30,6 +30,7 @@ namespace MaxiMed.Application.Users
             var q = db.Users.AsNoTracking()
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
+                .Include(u => u.Doctor)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(query))
@@ -51,6 +52,8 @@ namespace MaxiMed.Application.Users
                 FullName = u.FullName,
                 IsActive = u.IsActive,
                 CreatedAt = u.CreatedAt,
+                DoctorId = u.DoctorId,
+                DoctorName = u.Doctor != null ? u.Doctor.FullName : null,
                 Roles = u.UserRoles
                     .Where(ur => ur.Role != null)
                     .Select(ur => ur.Role.Name)
@@ -64,12 +67,18 @@ namespace MaxiMed.Application.Users
         {
             await using var db = await _dbFactory.CreateDbContextAsync(ct);
 
-            var u = await db.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, ct);
+            var u = await db.Users.AsNoTracking().Include(x => x.Doctor).FirstOrDefaultAsync(x => x.Id == id, ct);
             if (u is null) return null;
 
             var roleIds = await db.UserRoles.AsNoTracking()
                 .Where(ur => ur.UserId == id)
                 .Select(ur => ur.RoleId)
+                .ToListAsync(ct);
+
+            var roleNames = await db.UserRoles.AsNoTracking()
+                .Where(ur => ur.UserId == id)
+                .Include(ur => ur.Role)
+                .Select(ur => ur.Role.Name)
                 .ToListAsync(ct);
 
             return new UserEditDto
@@ -78,7 +87,10 @@ namespace MaxiMed.Application.Users
                 Login = u.Login,
                 FullName = u.FullName,
                 IsActive = u.IsActive,
-                RoleIds = roleIds
+                DoctorId = u.DoctorId,
+                DoctorName = u.Doctor != null ? u.Doctor.FullName : null,
+                RoleIds = roleIds,
+                Roles = roleNames
             };
         }
 
@@ -87,14 +99,18 @@ namespace MaxiMed.Application.Users
             if (string.IsNullOrWhiteSpace(password))
                 throw new InvalidOperationException("Пароль обязателен при создании");
 
+            Validate(dto);
+
             await using var db = await _dbFactory.CreateDbContextAsync(ct);
+            await ValidateDoctorLinkAsync(db, dto, ct);
 
             var user = new User
             {
                 Login = dto.Login,
                 FullName = dto.FullName,
                 IsActive = dto.IsActive,
-                PasswordHash = PasswordHasher.Hash(password)
+                PasswordHash = PasswordHasher.Hash(password),
+                DoctorId = dto.DoctorId
             };
 
             db.Users.Add(user);
@@ -108,7 +124,10 @@ namespace MaxiMed.Application.Users
 
         public async Task UpdateAsync(UserEditDto dto, string? password, CancellationToken ct = default)
         {
+            Validate(dto);
+
             await using var db = await _dbFactory.CreateDbContextAsync(ct);
+            await ValidateDoctorLinkAsync(db, dto, ct);
 
             var user = await db.Users
                 .Include(u => u.UserRoles)
@@ -118,6 +137,7 @@ namespace MaxiMed.Application.Users
             user.Login = dto.Login;
             user.FullName = dto.FullName;
             user.IsActive = dto.IsActive;
+            user.DoctorId = dto.DoctorId;
 
             if (!string.IsNullOrWhiteSpace(password))
                 user.PasswordHash = PasswordHasher.Hash(password);
@@ -186,6 +206,24 @@ namespace MaxiMed.Application.Users
             if (string.IsNullOrWhiteSpace(dto.Login)) throw new ArgumentException("Логин обязателен");
             if (dto.Login.Length > 64) throw new ArgumentException("Логин слишком длинный");
             if (dto.FullName?.Length > 120) throw new ArgumentException("ФИО слишком длинное");
+
+            if (HasDoctorRole(dto.Roles) && dto.DoctorId is not > 0)
+                throw new ArgumentException("Для роли Doctor нужно привязать пользователя к врачу");
+        }
+
+        private static bool HasDoctorRole(IEnumerable<string>? roles)
+            => roles?.Any(x => x.Equals("Doctor", StringComparison.OrdinalIgnoreCase)) == true;
+
+        private static async Task ValidateDoctorLinkAsync(MaxiMedDbContext db, UserEditDto dto, CancellationToken ct)
+        {
+            if (dto.DoctorId is not > 0)
+                return;
+
+            var exists = await db.Doctors.AsNoTracking()
+                .AnyAsync(x => x.Id == dto.DoctorId.Value && x.IsActive, ct);
+
+            if (!exists)
+                throw new ArgumentException("Выбранный врач не найден или отключён");
         }
         
 

@@ -252,6 +252,8 @@
                         <RowDefinition Height="14"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="14"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <!-- ФИО на всю ширину -->
@@ -310,8 +312,20 @@
                                   IsChecked="{Binding IsActive}"/>
                     </StackPanel>
 
+                    <!-- Режим приема -->
+                    <StackPanel Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,0">
+                        <TextBlock Text="Режим приема" Style="{StaticResource S_FieldLabel}"/>
+                        <ComboBox Style="{StaticResource S_ComboBox}"
+                                  SelectedValue="{Binding WorkShift, Mode=TwoWay}"
+                                  SelectedValuePath="Tag">
+                            <ComboBoxItem Content="Весь день" Tag="AllDay"/>
+                            <ComboBoxItem Content="До обеда" Tag="BeforeNoon"/>
+                            <ComboBoxItem Content="После обеда" Tag="AfterNoon"/>
+                        </ComboBox>
+                    </StackPanel>
+
                     <!-- Ошибка -->
-                    <Border Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="3"
+                    <Border Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="3"
                             Background="#FEF2F2"
                             BorderBrush="#FECACA"
                             BorderThickness="1"

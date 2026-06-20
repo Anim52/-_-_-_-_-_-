@@ -1,23 +1,24 @@
 ﻿using MaxiMed.Domain.Entities;
 using MaxiMed.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MaxiMed.Application.Auth
 {
     public sealed class AuthService : IAuthService
     {
-        private readonly MaxiMedDbContext _db;
+        private readonly IDbContextFactory<MaxiMedDbContext> _dbFactory;
 
-        public AuthService(MaxiMedDbContext db) => _db = db;
+        public AuthService(IDbContextFactory<MaxiMedDbContext> dbFactory)
+        {
+            _dbFactory = dbFactory;
+        }
 
         public async Task<User?> LoginAsync(string login, string password)
         {
-            var user = await _db.Users
+            await using var db = await _dbFactory.CreateDbContextAsync();
+
+            var user = await db.Users
+                .Include(u => u.Doctor)
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync(u => u.Login == login && u.IsActive);
@@ -25,19 +26,25 @@ namespace MaxiMed.Application.Auth
             if (user is null)
                 return null;
 
-            _db.AuditLogs.Add(new AuditLog
+            if (!PasswordHasher.Verify(password, user.PasswordHash))
+                return null;
+
+            db.AuditLogs.Add(new AuditLog
             {
                 UserId = user.Id,
                 Action = "Login",
                 Entity = "User",
-                EntityId = user.Id.ToString()
+                EntityId = user.Id.ToString(),
+                DetailsJson = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    Login = user.Login,
+                    At = DateTime.UtcNow
+                })
             });
-            await _db.SaveChangesAsync();
 
-            return PasswordHasher.Verify(password, user.PasswordHash)
-                ? user
-                : null;
-            
+            await db.SaveChangesAsync();
+
+            return user;
         }
     }
 }

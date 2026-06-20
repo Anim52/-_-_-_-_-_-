@@ -47,6 +47,7 @@ namespace MaxiMed.Application.Doctors
                     Phone = d.Phone,
                     Email = d.Email,
                     IsActive = d.IsActive,
+                    WorkShift = d.WorkShift,
                     BranchName = d.Branch.Name,
                     SpecialtyName = d.Specialty.Name
                 })
@@ -89,7 +90,8 @@ namespace MaxiMed.Application.Doctors
                 Room = dto.Room,
                 Phone = dto.Phone,
                 Email = dto.Email,
-                IsActive = dto.IsActive
+                IsActive = dto.IsActive,
+                WorkShift = string.IsNullOrWhiteSpace(dto.WorkShift) ? "AllDay" : dto.WorkShift
             };
 
             db.Doctors.Add(d);
@@ -112,6 +114,7 @@ namespace MaxiMed.Application.Doctors
             d.Phone = dto.Phone;
             d.Email = dto.Email;
             d.IsActive = dto.IsActive;
+            d.WorkShift = string.IsNullOrWhiteSpace(dto.WorkShift) ? "AllDay" : dto.WorkShift;
 
             await db.SaveChangesAsync(ct);
         }

@@ -325,7 +325,7 @@
                                 Style="{StaticResource S_NavToggle}"
                                 Command="{Binding OpenScheduleCommand}"
                                 Visibility="{Binding CanSeeScheduleDay, Converter={StaticResource BoolToVisibility}}"
-                                IsChecked="{Binding IsScheduleActive  ,Mode=TwoWay}"
+                                IsChecked="{Binding IsScheduleDayActive  ,Mode=TwoWay}"
                                 Margin="0,0,0,8">
                             <ToggleButton.Tag>
                                 <Path Data="{StaticResource I_Clock}" Style="{StaticResource S_IconPath}"/>

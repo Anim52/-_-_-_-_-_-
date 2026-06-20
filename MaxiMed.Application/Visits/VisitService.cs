@@ -72,5 +72,16 @@ namespace MaxiMed.Application.Visits
 
             await db.SaveChangesAsync(ct);
         }
+        public async Task<Visit?> GetByIdWithDetailsAsync(long id)
+        {
+            await using var db = await _dbFactory.CreateDbContextAsync();
+
+            return await db.Visits
+     .Include(x => x.Appointment)
+         .ThenInclude(x => x.Patient)
+     .Include(x => x.Doctor)
+     .Include(x => x.Prescriptions)
+     .FirstOrDefaultAsync(x => x.Id == id);
+        }
     }
 }

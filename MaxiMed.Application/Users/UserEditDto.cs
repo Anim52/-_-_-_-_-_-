@@ -12,6 +12,8 @@ namespace MaxiMed.Application.Users
         public string Login { get; set; } = "";
         public string? FullName { get; set; }
         public bool IsActive { get; set; } = true;
+        public int? DoctorId { get; set; }
+        public string? DoctorName { get; set; }
 
         // ✅ именно Id ролей (для чекбоксов/листбокса)
         public List<int> RoleIds { get; set; } = new();

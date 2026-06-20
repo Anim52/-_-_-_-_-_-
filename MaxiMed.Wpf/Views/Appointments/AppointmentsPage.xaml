@@ -262,7 +262,7 @@
                     <DatePicker 
                         x:Name="DateFilterPicker"
                         Style="{StaticResource S_DatePicker}"
-                        SelectedDate="{Binding SelectedDate, Mode=TwoWay}"
+                        SelectedDate="{Binding SelectedDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Width="150"
                         Margin="0,0,10,0"/>
 
@@ -274,7 +274,8 @@
                               ItemsSource="{Binding Doctors}"
                               DisplayMemberPath="Name"
                               SelectedValuePath="Id"
-                              SelectedValue="{Binding SelectedDoctorId}"/>
+                              SelectedValue="{Binding SelectedDoctorId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              IsEnabled="{Binding IsNotDoctorMode}"/>
 
                     <Button Content="Показать"
                             Style="{StaticResource S_ButtonPrimary}"
@@ -306,6 +307,16 @@
                             Style="{StaticResource S_ButtonSecondary}"
                             Margin="0,0,10,0"
                             Command="{Binding OpenVisitCommand}"/>
+
+                    <Button Content="История пациента"
+                            Style="{StaticResource S_ButtonSecondary}"
+                            Margin="0,0,10,0"
+                            Command="{Binding OpenPatientHistoryCommand}"/>
+
+                    <Button Content="Печать талона"
+                            Style="{StaticResource S_ButtonSecondary}"
+                            Margin="0,0,10,0"
+                            Command="{Binding PrintTicketCommand}"/>
 
                     <Button Content="Отменить"
                             Style="{StaticResource S_ButtonSecondary}"

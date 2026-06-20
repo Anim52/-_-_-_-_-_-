@@ -279,14 +279,14 @@
                                   ItemsSource="{Binding Doctors}"
                                   DisplayMemberPath="Name"
                                   SelectedValuePath="Id"
-                                  SelectedValue="{Binding DoctorId}"/>
+                                  SelectedValue="{Binding DoctorId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
 
                     <!-- Дата -->
                     <StackPanel Grid.Row="2" Grid.Column="0">
                         <TextBlock Text="Дата" Style="{StaticResource S_FieldLabel}"/>
                         <DatePicker Style="{StaticResource S_DatePicker}"
-                                    SelectedDate="{Binding Date}"/>
+                                    SelectedDate="{Binding Date, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
 
                     <!-- Начало -->

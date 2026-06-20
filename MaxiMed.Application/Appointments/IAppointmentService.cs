@@ -1,4 +1,5 @@
 ﻿using MaxiMed.Application.Common;
+using MaxiMed.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace MaxiMed.Application.Appointments
         Task<LookupItemDto?> GetPatientLookupAsync(int patientId, CancellationToken ct = default);
         Task<IReadOnlyList<LookupItemDto>> GetActiveDoctorsAsync(CancellationToken ct = default);
         Task<IReadOnlyList<AppointmentDto>> GetByPatientAsync(int patientId, CancellationToken ct = default);
+        Task<IReadOnlyList<AppointmentDto>> GetByPatientForDoctorAsync(int patientId, int doctorId, CancellationToken ct = default);
 
         Task<IReadOnlyList<LookupItemDto>> GetActiveBranchesAsync(CancellationToken ct = default);
         Task<IReadOnlyList<LookupItemDto>> SearchPatientsAsync(string? query, CancellationToken ct = default);
@@ -28,6 +30,6 @@ namespace MaxiMed.Application.Appointments
         Task<int> CreateAsync(AppointmentDto dto, CancellationToken ct = default);
         Task DeleteAsync(int id, CancellationToken ct = default);
         Task UpdateAsync(AppointmentDto dto, CancellationToken ct = default);
- 
+        Task<Appointment?> GetByIdWithDetailsAsync(long id);
     }
 }

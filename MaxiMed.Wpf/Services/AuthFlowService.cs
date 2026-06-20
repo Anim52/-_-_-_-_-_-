@@ -1,4 +1,4 @@
-﻿using MaxiMed.Domain.Entities;
+using MaxiMed.Domain.Entities;
 using MaxiMed.Wpf.ViewModels;
 using MaxiMed.Wpf.ViewModels.Auth;
 using MaxiMed.Wpf.Views;
@@ -87,23 +87,20 @@ namespace MaxiMed.Wpf.Services
             User? resultUser = null;
 
             // важно: подписка ДО ShowDialog
-            loginVm.LoginSucceeded += user =>
+            void OnLoginSucceeded(User user)
             {
                 resultUser = user;
                 loginWindow.DialogResult = true; // завершит ShowDialog()
                 loginWindow.Close();
-            };
+            }
+
+            loginVm.LoginSucceeded += OnLoginSucceeded;
 
             // пользователь нажал “Отмена” (или закрыл окно)
             var ok = loginWindow.ShowDialog() == true;
 
             // на всякий случай отписаться (чтобы не копились подписки)
-            loginVm.LoginSucceeded -= user =>
-            {
-                resultUser = user;
-                loginWindow.DialogResult = true;
-                loginWindow.Close();
-            };
+            loginVm.LoginSucceeded -= OnLoginSucceeded;
 
             return ok ? resultUser : null;
         }

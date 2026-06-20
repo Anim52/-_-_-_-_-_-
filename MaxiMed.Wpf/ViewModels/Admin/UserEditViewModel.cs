@@ -3,6 +3,8 @@ using CommunityToolkit.Mvvm.Input;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Wordprocessing;
 using MaxiMed.Application.Users;
+using MaxiMed.Application.Doctors;
+using MaxiMed.Application.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,6 +17,7 @@ namespace MaxiMed.Wpf.ViewModels.Admin
     public partial class UserEditViewModel : ObservableObject
     {
         private readonly IUserAdminService _service;
+        private readonly IDoctorService _doctorService;
 
         public event Action<bool>? RequestClose;
 
@@ -25,6 +28,8 @@ namespace MaxiMed.Wpf.ViewModels.Admin
 
         // роли как чекбоксы
         public ObservableCollection<RoleItemVm> Roles { get; } = new();
+        public ObservableCollection<LookupItemDto> Doctors { get; } = new();
+        [ObservableProperty] private int? selectedDoctorId;
 
         // пароль: обязателен при создании
         [ObservableProperty] private string? newPassword;
@@ -33,7 +38,11 @@ namespace MaxiMed.Wpf.ViewModels.Admin
 
         public bool IsCreateMode => Id == 0;
 
-        public UserEditViewModel(IUserAdminService service) => _service = service;
+        public UserEditViewModel(IUserAdminService service, IDoctorService doctorService)
+        {
+            _service = service;
+            _doctorService = doctorService;
+        }
 
         public async Task LoadAsync(int id)
         {
@@ -45,7 +54,14 @@ namespace MaxiMed.Wpf.ViewModels.Admin
             FullName = "";
             IsActive = true;
 
-            // подгружаем список ролей всегда
+            // подгружаем список врачей и ролей всегда
+            Doctors.Clear();
+            Doctors.Add(new LookupItemDto { Id = 0, Name = "Не привязан" });
+            foreach (var d in await _doctorService.SearchAsync(null))
+                Doctors.Add(new LookupItemDto { Id = d.Id, Name = d.FullName });
+
+            SelectedDoctorId = 0;
+
             Roles.Clear();
             var allRoles = await _service.GetAllRoleNamesAsync();
             foreach (var r in allRoles)
@@ -66,6 +82,7 @@ namespace MaxiMed.Wpf.ViewModels.Admin
             Login = dto.Login;
             FullName = dto.FullName;
             IsActive = dto.IsActive;
+            SelectedDoctorId = dto.DoctorId ?? 0;
 
             foreach (var r in Roles)
                 r.IsSelected = dto.Roles.Any(x => x.Equals(r.Name, StringComparison.OrdinalIgnoreCase));
@@ -88,6 +105,10 @@ namespace MaxiMed.Wpf.ViewModels.Admin
                 if (selectedRoles.Count == 0)
                     throw new ArgumentException("Выберите хотя бы одну роль");
 
+                var isDoctorUser = selectedRoles.Any(x => x.Equals("Doctor", StringComparison.OrdinalIgnoreCase));
+                if (isDoctorUser && SelectedDoctorId is not > 0)
+                    throw new ArgumentException("Для роли Doctor нужно привязать пользователя к врачу");
+
                 if (Id == 0 && string.IsNullOrWhiteSpace(NewPassword))
                     throw new ArgumentException("Пароль обязателен при создании пользователя");
 
@@ -97,6 +118,7 @@ namespace MaxiMed.Wpf.ViewModels.Admin
                     Login = Login.Trim(),
                     FullName = string.IsNullOrWhiteSpace(FullName) ? null : FullName.Trim(),
                     IsActive = IsActive,
+                    DoctorId = SelectedDoctorId is > 0 ? SelectedDoctorId : null,
                     Roles = selectedRoles
                 };
 

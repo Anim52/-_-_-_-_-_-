@@ -11,5 +11,5 @@ public sealed class AuthApiService : IAuthService
     private sealed record LoginRequest(string Login, string Password);
 
     public Task<User?> LoginAsync(string login, string password)
-        => _api.PostAsync<User?>("api/auth/login", new LoginRequest(login, password));
+        => _api.PostAsync<User?>("/api/auth/login", new LoginRequest(login, password));
 }

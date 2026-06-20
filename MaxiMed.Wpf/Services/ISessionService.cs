@@ -10,6 +10,7 @@ namespace MaxiMed.Wpf.Services
     public interface ISessionService
     {
         User? CurrentUser { get; }
+        int? DoctorId { get; }
         void SetUser(User user);
         bool IsInRole(string roleName);
         void Clear();

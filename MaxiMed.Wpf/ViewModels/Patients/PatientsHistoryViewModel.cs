@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaxiMed.Application.Patients;
+using MaxiMed.Wpf.Services;
 using MaxiMed.Wpf.ViewModels.Visits;
 using MaxiMed.Wpf.Views.Visits;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +17,7 @@ namespace MaxiMed.Wpf.ViewModels.Patients
     public partial class PatientsHistoryViewModel : ObservableObject
     {
         private readonly IPatientHistoryService _service;
+        private readonly ISessionService _session;
         private readonly IServiceProvider _sp;
 
         public ObservableCollection<PatientHistoryItemDto> Items { get; } = new();
@@ -23,9 +25,10 @@ namespace MaxiMed.Wpf.ViewModels.Patients
         [ObservableProperty] private PatientHistoryItemDto? selected;
         private int _patientId;
 
-        public PatientsHistoryViewModel(IPatientHistoryService service, IServiceProvider sp)
+        public PatientsHistoryViewModel(IPatientHistoryService service, ISessionService session, IServiceProvider sp)
         {
             _service = service;
+            _session = session;
             _sp = sp;
         }
 
@@ -36,6 +39,9 @@ namespace MaxiMed.Wpf.ViewModels.Patients
             Items.Clear();
 
             var list = await _service.GetAsync(patientId);
+            if (_session.IsInRole("Doctor") && _session.DoctorId.HasValue)
+                list = list.Where(x => x.DoctorId == _session.DoctorId.Value).ToList();
+
             foreach (var x in list) Items.Add(x);
         }
 

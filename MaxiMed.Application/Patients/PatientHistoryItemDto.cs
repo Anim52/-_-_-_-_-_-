@@ -13,6 +13,7 @@ namespace MaxiMed.Application.Patients
         public DateTime StartAt { get; set; }
         public AppointmentStatus Status { get; set; }
 
+        public int DoctorId { get; set; }
         public string DoctorName { get; set; } = "";
         public string BranchName { get; set; } = "";
 

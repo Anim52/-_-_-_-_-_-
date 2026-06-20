@@ -1,3 +1,4 @@
+﻿using MaxiMed.Api.Filters;
 using MaxiMed.Application.Appointments;
 using MaxiMed.Application.Attachments;
 using MaxiMed.Application.Audit;
@@ -12,20 +13,37 @@ using MaxiMed.Application.Services;
 using MaxiMed.Application.Users;
 using MaxiMed.Application.Visits;
 using MaxiMed.Infrastructure.Data;
+
 using Microsoft.EntityFrameworkCore;
+
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers()
+builder.Services.AddControllers(options =>
+    {
+        options.Filters.Add<ActionAuditFilter>();
+    })
     .AddJsonOptions(o =>
     {
         o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        o.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        o.JsonSerializerOptions.DefaultIgnoreCondition =
+            JsonIgnoreCondition.WhenWritingNull;
     });
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.CustomSchemaIds(type => type.FullName!.Replace("+", "."));
+});
+
 builder.Services.AddDbContextFactory<MaxiMedDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+{
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("Default"));
+});
+
+
 
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IPatientHistoryService, PatientHistoryService>();
@@ -49,15 +67,31 @@ builder.Services.AddScoped<IVisitDiagnosisService, VisitDiagnosisService>();
 builder.Services.AddScoped<IBranchService, BranchService>();
 builder.Services.AddScoped<ISpecialtyService, SpecialtyService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ActionAuditFilter>();
 
 var app = builder.Build();
 
+app.UseSwagger();
+app.UseSwaggerUI();
+
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<IDbContextFactory<MaxiMedDbContext>>().CreateDbContext();
+    var factory = scope.ServiceProvider
+        .GetRequiredService<IDbContextFactory<MaxiMedDbContext>>();
+
+    using var db = factory.CreateDbContext();
+
     db.Database.Migrate();
+
     await DbInitializer.SeedAsync(db);
 }
+app.UseAuthorization();
+
+app.MapGet("/", context =>
+{
+    context.Response.Redirect("/swagger");
+    return Task.CompletedTask;
+});
 
 app.MapControllers();
 

@@ -1,4 +1,4 @@
-﻿<Window x:Class="MaxiMed.Wpf.Views.Auth.LoginWindow"
+<Window x:Class="MaxiMed.Wpf.Views.Auth.LoginWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -253,9 +253,7 @@ SizeToContent="Manual"
                         </StackPanel>
                     </Border>
 
-                    <TextBlock Text="Подсказка: Enter — вход"
-                               Foreground="{DynamicResource TextSecondary}"
-                               FontSize="12"/>
+                 
                 </StackPanel>
 
                 <!-- Divider -->
@@ -440,10 +438,9 @@ SizeToContent="Manual"
                         </Grid.ColumnDefinitions>
 
                         <Button Grid.Column="2"
-                                Content="Войти"
-                                Style="{StaticResource S_PrimaryBtn}"
-                                Command="{Binding LoginCommand}"
-                                Click="OnLoginClick"/>
+        Content="Войти"
+        Style="{StaticResource S_PrimaryBtn}"
+        Click="OnLoginClick" />
 
                         <Button Grid.Column="4"
                                 Content="Отмена"

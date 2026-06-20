@@ -194,6 +194,14 @@
                              Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}"
                              Margin="0,0,0,10"/>
 
+                    <TextBlock Text="Привязка к врачу" Style="{StaticResource S_Label}"/>
+                    <ComboBox ItemsSource="{Binding Doctors}"
+                              DisplayMemberPath="Name"
+                              SelectedValuePath="Id"
+                              SelectedValue="{Binding SelectedDoctorId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              Height="38"
+                              Margin="0,0,0,10"/>
+
                     <CheckBox Content="Активен"
                               Style="{StaticResource S_CheckBox}"
                               IsChecked="{Binding IsActive}"

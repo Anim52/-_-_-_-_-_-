@@ -30,6 +30,7 @@ namespace MaxiMed.Application.Patients
                     AppointmentId = (int)a.Id,
                     StartAt = a.StartAt,
                     Status = a.Status,
+                    DoctorId = a.DoctorId,
                     DoctorName = a.Doctor.FullName,
                     BranchName = a.Branch.Name,
                     VisitId = a.Visit != null ? a.Visit.Id : null

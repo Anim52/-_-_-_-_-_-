@@ -1,8 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaxiMed.Application.Appointments;
 using MaxiMed.Application.Common;
 using MaxiMed.Domain.Lookups;
+using MaxiMed.Wpf.Services;
 using MaxiMed.Wpf.ViewModels.Appointments;
 using MaxiMed.Wpf.Views.Appointments;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,10 @@ namespace MaxiMed.Wpf.ViewModels.Schedule
     {
         private readonly IAppointmentService _service;
         private readonly IServiceProvider _sp;
+        private readonly ISessionService _session;
+
+        public bool IsDoctorMode => _session.IsInRole("Doctor");
+        public bool IsNotDoctorMode => !IsDoctorMode;
 
         public List<LookupItemDto> Doctors { get; private set; } = new();
 
@@ -30,19 +35,34 @@ namespace MaxiMed.Wpf.ViewModels.Schedule
 
         [ObservableProperty] private bool isBusy;
 
-        public DoctorScheduleViewModel(IAppointmentService service, IServiceProvider sp)
+        public DoctorScheduleViewModel(IAppointmentService service, IServiceProvider sp, ISessionService session)
         {
             _service = service;
             _sp = sp;
+            _session = session;
         }
 
         public async Task InitAsync()
         {
-            Doctors = (await _service.GetActiveDoctorsAsync()).ToList();
-            OnPropertyChanged(nameof(Doctors));
+            var doctors = (await _service.GetActiveDoctorsAsync()).ToList();
 
-            if (SelectedDoctorId is null && Doctors.Count > 0)
-                SelectedDoctorId = Doctors[0].Id;
+            if (_session.IsInRole("Doctor"))
+            {
+                Doctors = _session.DoctorId.HasValue
+                    ? doctors.Where(d => d.Id == _session.DoctorId.Value).ToList()
+                    : new List<LookupItemDto>();
+                SelectedDoctorId = _session.DoctorId;
+            }
+            else
+            {
+                Doctors = doctors;
+                if (SelectedDoctorId is null && Doctors.Count > 0)
+                    SelectedDoctorId = Doctors[0].Id;
+            }
+
+            OnPropertyChanged(nameof(Doctors));
+            OnPropertyChanged(nameof(IsDoctorMode));
+            OnPropertyChanged(nameof(IsNotDoctorMode));
 
             await LoadAsync();
         }
@@ -59,7 +79,7 @@ namespace MaxiMed.Wpf.ViewModels.Schedule
                 Slots.Clear();
 
                 var day = (SelectedDate ?? DateTime.Today).Date;
-                var did = SelectedDoctorId;
+                var did = _session.IsInRole("Doctor") ? _session.DoctorId : SelectedDoctorId;
 
                 // берём записи врача за день
                 var appts = await _service.GetDayAsync(day, did);
@@ -112,14 +132,17 @@ namespace MaxiMed.Wpf.ViewModels.Schedule
         [RelayCommand]
         private async Task AddFromSlotAsync(TimeSlotVm slot)
         {
-            if (slot is null || !slot.IsFree || SelectedDoctorId is null) return;
+            if (slot is null || !slot.IsFree) return;
+
+            var currentDoctorId = _session.IsInRole("Doctor") ? _session.DoctorId : SelectedDoctorId;
+            if (currentDoctorId is null || currentDoctorId <= 0) return;
 
             var vm = _sp.GetRequiredService<AppointmentEditViewModel>();
             await vm.InitAsync();
 
             vm.LoadFrom(new AppointmentDto
             {
-                DoctorId = SelectedDoctorId.Value,
+                DoctorId = currentDoctorId.Value,
                 StartAt = slot.StartAt,
                 EndAt = slot.EndAt
             }, "Новая запись");
@@ -144,7 +167,8 @@ namespace MaxiMed.Wpf.ViewModels.Schedule
             // Открываем через обычный диалог редактирования:
             // возьмём все записи дня и найдём нужную
             var day = (SelectedDate ?? DateTime.Today).Date;
-            var appts = await _service.GetDayAsync(day, SelectedDoctorId);
+            var currentDoctorId = _session.IsInRole("Doctor") ? _session.DoctorId : SelectedDoctorId;
+            var appts = await _service.GetDayAsync(day, currentDoctorId);
             var dto = appts.FirstOrDefault(x => x.Id == slot.AppointmentId.Value);
             if (dto is null) return;
 

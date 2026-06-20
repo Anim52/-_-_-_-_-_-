@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Input;
 using MaxiMed.Domain.Entities;
 using MaxiMed.Wpf.ViewModels.Auth;
 using MaxiMed.Wpf.Services;
@@ -78,23 +78,16 @@ namespace MaxiMed.Wpf.Views.Auth
 
         private void OnLoginClick(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("OnLoginClick fired"); // временно
+            var password = PwdWrap.Visibility == Visibility.Visible
+                ? Pwd.Password
+                : PwdText.Text;
 
             if (DataContext is not LoginViewModel vm)
-            {
-                MessageBox.Show("DataContext is NOT LoginViewModel");
                 return;
-            }
 
-            var pwd = _passwordVisible ? PwdText.Text : Pwd.Password;
-
-            if (vm.LoginCommand.CanExecute(pwd))
-                vm.LoginCommand.Execute(pwd);
-            else
-                MessageBox.Show("LoginCommand.CanExecute == false");
+            if (vm.LoginCommand.CanExecute(password))
+                vm.LoginCommand.Execute(password);
         }
-
-
 
         private void OnCancelClick(object sender, RoutedEventArgs e) => Close();
 

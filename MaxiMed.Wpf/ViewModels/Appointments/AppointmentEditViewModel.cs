@@ -21,6 +21,7 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
         [ObservableProperty] private string title = "Запись";
         private int _patientSearchVersion;
         private bool _isInitializingDefaultSlot;
+        private bool _suppressAutoSlot;
 
         public List<LookupItemDto> Doctors { get; private set; } = new();
         public List<LookupItemDto> Branches { get; private set; } = new();
@@ -52,24 +53,30 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
 
         public void LoadFrom(AppointmentDto dto, string dialogTitle)
         {
-            Title = dialogTitle;
+            _suppressAutoSlot = true;
+            try
+            {
+                Title = dialogTitle;
 
-            Id = dto.Id;
-            DoctorId = dto.DoctorId;
-            BranchId = dto.BranchId;
+                Id = dto.Id;
+                DoctorId = dto.DoctorId;
+                BranchId = dto.BranchId;
 
-            Date = dto.StartAt.Date;
-            StartTimeText = dto.StartAt.ToString("HH:mm");
-            EndTimeText = dto.EndAt.ToString("HH:mm");
+                Date = dto.StartAt.Date;
+                StartTimeText = dto.StartAt.ToString("HH:mm");
+                EndTimeText = dto.EndAt.ToString("HH:mm");
 
-            ErrorText = null;
-            PatientSearch = null;
-            PatientCandidates = new();
-            OnPropertyChanged(nameof(PatientCandidates));
-            SelectedPatientCandidate = null;
-            PatientCandidates = new();
-
-
+                ErrorText = null;
+                PatientSearch = null;
+                PatientCandidates = new();
+                OnPropertyChanged(nameof(PatientCandidates));
+                SelectedPatientCandidate = null;
+                PatientCandidates = new();
+            }
+            finally
+            {
+                _suppressAutoSlot = false;
+            }
         }
         public async Task SetPatientByIdAsync(int patientId)
         {
@@ -233,13 +240,13 @@ namespace MaxiMed.Wpf.ViewModels.Appointments
         }
         partial void OnDoctorIdChanged(int value)
         {
-            if (Id == 0 && !_isInitializingDefaultSlot)
+            if (Id == 0 && !_isInitializingDefaultSlot && !_suppressAutoSlot)
                 _ = InitDefaultSlotAsync();
         }
 
         partial void OnDateChanged(DateTime? value)
         {
-            if (Id == 0 && !_isInitializingDefaultSlot)
+            if (Id == 0 && !_isInitializingDefaultSlot && !_suppressAutoSlot)
                 _ = InitDefaultSlotAsync();
         }
     }

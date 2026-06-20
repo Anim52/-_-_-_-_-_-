@@ -16,6 +16,13 @@ namespace MaxiMed.Application.Doctors
         public string? Phone { get; set; }
         public string? Email { get; set; }
         public bool IsActive { get; set; } = true;
+        public string WorkShift { get; set; } = "AllDay";
+        public string WorkShiftText => WorkShift switch
+        {
+            "BeforeNoon" => "До обеда",
+            "AfterNoon" => "После обеда",
+            _ => "Весь день"
+        };
 
         public string? BranchName { get; set; }
         public string? SpecialtyName { get; set; }

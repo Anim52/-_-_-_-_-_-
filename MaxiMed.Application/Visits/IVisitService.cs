@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MaxiMed.Domain.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,5 +11,6 @@ namespace MaxiMed.Application.Visits
     {
         Task<VisitDto> GetOrCreateByAppointmentAsync(long appointmentId, int doctorId, CancellationToken ct = default);
         Task SaveAsync(VisitDto dto, CancellationToken ct = default);
+        Task<Visit?> GetByIdWithDetailsAsync(long id);
     }
 }

@@ -17,6 +17,7 @@ namespace MaxiMed.Domain.Entities
         public string? Phone { get; set; }
         public string? Email { get; set; }
         public bool IsActive { get; set; } = true;
+        public string WorkShift { get; set; } = "AllDay";
 
         public Specialty Specialty { get; set; } = null!;
         public ClinicBranch Branch { get; set; } = null!;

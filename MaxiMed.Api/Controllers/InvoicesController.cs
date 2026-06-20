@@ -1,4 +1,5 @@
 using MaxiMed.Application.Invoices;
+using MaxiMed.Domain.Entities;
 using MaxiMed.Domain.Lookups;
 using Microsoft.AspNetCore.Mvc;
 
@@ -44,5 +45,39 @@ public sealed class InvoicesController : ControllerBase
     {
         await _svc.DeletePaymentAsync(paymentId, ct);
         return NoContent();
+    }
+    [HttpGet("{id:long}/print")]
+    public async Task<IActionResult> GetPrintData(long id)
+    {
+        var invoice = await _svc.GetByIdWithDetailsAsync(id);
+
+        if (invoice == null)
+            return NotFound();
+
+        return Ok(new
+        {
+            invoice.Id,
+            PatientName = invoice.Patient.LastName + " " +
+                          invoice.Patient.FirstName + " " +
+                          invoice.Patient.MiddleName,
+            invoice.TotalAmount,
+            invoice.DiscountAmount,
+            invoice.PaidAmount,
+            DueAmount = invoice.TotalAmount - invoice.DiscountAmount - invoice.PaidAmount,
+            Items = invoice.Items.Select(x => new
+            {
+                ServiceName = x.Service != null ? x.Service.Name : "Услуга",
+                x.Qty,
+                x.Price,
+                LineTotal = x.Qty * x.Price
+            }).ToList(),
+            Payments = invoice.Payments.Select(x => new
+            {
+                x.Amount,
+                x.PaidAt,
+                Method = x.Method.ToString(),
+                x.Note
+            }).ToList()
+        });
     }
 }

@@ -1,4 +1,5 @@
 using MaxiMed.Application.Visits;
+using MaxiMed.Domain.Entities;
 
 namespace MaxiMed.Wpf.Api;
 
@@ -12,4 +13,8 @@ public sealed class VisitsApiService : IVisitService
 
     public Task SaveAsync(VisitDto dto, CancellationToken ct = default)
         => _api.PostAsync("api/visits/save", dto, ct);
+    public Task<Visit?> GetByIdWithDetailsAsync(long id)
+    {
+        return _api.GetAsync<Visit>($"api/visits/{id}/print");
+    }
 }

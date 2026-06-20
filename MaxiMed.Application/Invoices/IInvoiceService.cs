@@ -1,3 +1,4 @@
+using MaxiMed.Domain.Entities;
 using MaxiMed.Domain.Lookups;
 using System;
 using System.Threading;
@@ -25,5 +26,6 @@ namespace MaxiMed.Application.Invoices
         Task UpdatePaymentDateAsync(long paymentId, DateTime paidAt, CancellationToken ct = default);
 
         Task DeletePaymentAsync(long paymentId, CancellationToken ct = default);
+        Task<Invoice?> GetByIdWithDetailsAsync(long id);
     }
 }

@@ -1,4 +1,4 @@
-﻿<Window x:Class="MaxiMed.Wpf.Views.Visits.VisitEditWindow"
+<Window x:Class="MaxiMed.Wpf.Views.Visits.VisitEditWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -350,6 +350,8 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="10"/>
                                 <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
                             <TextBox Grid.Column="0"
@@ -366,7 +368,15 @@
                                     Content="Удалить"
                                     Style="{StaticResource S_ButtonSecondary}"
                                     MinWidth="120"
+                                    Margin="0,0,10,0"
                                     Command="{Binding RemovePrescriptionCommand}"/>
+
+                            <Button Grid.Column="6"
+                                    Content="Печать назначения"
+                                    Style="{StaticResource S_ButtonSecondary}"
+                                    MinWidth="170"
+                                    HorizontalAlignment="Right"
+                                    Command="{Binding PrintPrescriptionCommand}"/>
                         </Grid>
 
                         <Border BorderBrush="#10E2E8F0" BorderThickness="1" CornerRadius="12" Padding="0">

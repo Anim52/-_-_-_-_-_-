@@ -17,6 +17,9 @@ namespace MaxiMed.Domain.Entities
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        public int? DoctorId { get; set; }
+        public Doctor? Doctor { get; set; }
+
         public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     }
 

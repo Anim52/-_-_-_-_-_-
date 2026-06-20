@@ -1,4 +1,4 @@
-﻿<Page x:Class="MaxiMed.Wpf.Views.Schedule.WeekSchedulePage"
+<Page x:Class="MaxiMed.Wpf.Views.Schedule.WeekSchedulePage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -255,7 +255,8 @@
                               ItemsSource="{Binding Doctors}"
                               DisplayMemberPath="Name"
                               SelectedValuePath="Id"
-                              SelectedValue="{Binding SelectedDoctorId}" />
+                              SelectedValue="{Binding SelectedDoctorId}"
+                              IsEnabled="{Binding IsNotDoctorMode}" />
 
                     <TextBlock Text="Неделя с" Style="{StaticResource S_FieldLabel}" Margin="12,0,6,0"/>
                     <DatePicker Style="{StaticResource S_DatePicker}"

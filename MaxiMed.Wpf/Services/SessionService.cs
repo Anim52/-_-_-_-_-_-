@@ -10,6 +10,7 @@ namespace MaxiMed.Wpf.Services
     public sealed class SessionService : ISessionService
     {
         public User? CurrentUser { get; private set; }
+        public int? DoctorId => CurrentUser?.DoctorId;
 
         public void SetUser(User user) => CurrentUser = user;
         public void Clear() => CurrentUser = null;

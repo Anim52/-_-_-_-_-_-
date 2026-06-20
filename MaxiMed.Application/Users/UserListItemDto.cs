@@ -14,6 +14,8 @@ namespace MaxiMed.Application.Users
         public bool IsActive { get; set; }
         public string RolesText => Roles is null ? string.Empty : string.Join(", ", Roles);
         public DateTime CreatedAt { get; set; }
+        public int? DoctorId { get; set; }
+        public string? DoctorName { get; set; }
 
         public List<string> Roles { get; set; } = new();
 

@@ -139,6 +139,30 @@ namespace MaxiMed.Application.Appointments
                 })
                 .ToListAsync(ct);
         }
+        public async Task<IReadOnlyList<AppointmentDto>> GetByPatientForDoctorAsync(int patientId, int doctorId, CancellationToken ct = default)
+        {
+            await using var db = await _dbFactory.CreateDbContextAsync(ct);
+
+            return await db.Appointments.AsNoTracking()
+                .Where(a => a.PatientId == patientId && a.DoctorId == doctorId)
+                .Include(a => a.Doctor)
+                .Include(a => a.Branch)
+                .OrderByDescending(a => a.StartAt)
+                .Select(a => new AppointmentDto
+                {
+                    Id = (int)a.Id,
+                    BranchId = a.BranchId,
+                    DoctorId = a.DoctorId,
+                    PatientId = a.PatientId,
+                    StartAt = a.StartAt,
+                    EndAt = a.EndAt,
+                    Status = a.Status,
+                    DoctorName = a.Doctor.FullName,
+                    BranchName = a.Branch.Name
+                })
+                .ToListAsync(ct);
+        }
+
         public async Task<IReadOnlyList<FreeSlotDto>> FindFreeSlotsAsync(
      int doctorId,
      DateTime fromDate,
@@ -152,6 +176,11 @@ namespace MaxiMed.Application.Appointments
 
             var startDate = fromDate.Date;
             var endDate = toDate.Date.AddDays(1);
+
+            var doctor = await db.Doctors.AsNoTracking()
+                .Where(d => d.Id == doctorId)
+                .Select(d => new { d.WorkShift })
+                .FirstOrDefaultAsync(ct);
 
             // записи врача
             var appointments = await db.Appointments.AsNoTracking()
@@ -175,8 +204,9 @@ namespace MaxiMed.Application.Appointments
                 if (dayOffs.Contains(day.Date))
                     continue; // 🔹 пропускаем день
 
-                var workStart = day.AddHours(9);
-                var workEnd = day.AddHours(18);
+                var shift = doctor?.WorkShift ?? "AllDay";
+                var workStart = shift is "AfterNoon" or "Afternoon" ? day.AddHours(13) : day.AddHours(9);
+                var workEnd = shift is "BeforeNoon" or "Morning" ? day.AddHours(13) : day.AddHours(18);
 
                 for (var t = workStart; t < workEnd; t = t.AddMinutes(30))
                 {
@@ -281,6 +311,7 @@ namespace MaxiMed.Application.Appointments
 
             await using var db = await _dbFactory.CreateDbContextAsync(ct);
 
+            await EnsureDoctorWorkTime(db, dto, ct);
             await EnsureNoDoctorOverlap(db, dto, ct);
             await EnsureNoPatientOverlap(db, dto, ct);
 
@@ -304,6 +335,7 @@ namespace MaxiMed.Application.Appointments
 
             await using var db = await _dbFactory.CreateDbContextAsync(ct);
 
+            await EnsureDoctorWorkTime(db, dto, ct);
             await EnsureNoDoctorOverlap(db, dto, ct);
             await EnsureNoPatientOverlap(db, dto, ct);
 
@@ -317,6 +349,34 @@ namespace MaxiMed.Application.Appointments
             a.EndAt = dto.EndAt;
 
             await db.SaveChangesAsync(ct);
+        }
+        private static async Task EnsureDoctorWorkTime(
+    MaxiMedDbContext db,
+    AppointmentDto dto,
+    CancellationToken ct = default)
+        {
+            var doctor = await db.Doctors
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == dto.DoctorId, ct);
+
+            if (doctor == null)
+                return;
+
+            var shift = doctor.WorkShift ?? "FullDay";
+
+            var start = dto.StartAt.TimeOfDay;
+            var end = dto.EndAt.TimeOfDay;
+
+            var isAllowed = shift switch
+            {
+                "Morning" => start >= new TimeSpan(8, 0, 0) && end <= new TimeSpan(13, 0, 0),
+                "Afternoon" => start >= new TimeSpan(13, 0, 0) && end <= new TimeSpan(18, 0, 0),
+                "FullDay" => start >= new TimeSpan(8, 0, 0) && end <= new TimeSpan(18, 0, 0),
+                _ => true
+            };
+
+            if (!isAllowed)
+                throw new InvalidOperationException("Выбранное время не входит в рабочую смену врача.");
         }
 
         public async Task DeleteAsync(int id, CancellationToken ct = default)
@@ -365,6 +425,16 @@ namespace MaxiMed.Application.Appointments
 
             if (exists)
                 throw new InvalidOperationException("Пациент уже записан на это время.");
+        }
+        public async Task<Appointment?> GetByIdWithDetailsAsync(long id)
+        {
+            await using var db = await _dbFactory.CreateDbContextAsync();
+
+            return await db.Appointments
+                .Include(x => x.Patient)
+                .Include(x => x.Doctor)
+                .Include(x => x.Branch)
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
     }
 }

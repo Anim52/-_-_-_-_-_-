@@ -68,8 +68,31 @@ namespace MaxiMed.Application.Invoices
             }
             else
             {
-                // Можно синхронизировать Items с услугами записи при желании.
-                // Пока не трогаем, чтобы не ломать оплаты.
+                // Синхронизируем счёт с услугами записи.
+                // Раньше уже созданный счёт мог оставаться пустым, если услуги добавили позже.
+                foreach (var s in appt.Services)
+                {
+                    var exists = invoice.Items.Any(x => x.ServiceId == s.ServiceId);
+                    if (!exists)
+                    {
+                        invoice.Items.Add(new InvoiceItem
+                        {
+                            ServiceId = s.ServiceId,
+                            Qty = s.Qty,
+                            Price = s.Price
+                        });
+                    }
+                }
+
+                invoice.TotalAmount = invoice.Items.Sum(x => x.Qty * x.Price);
+                invoice.PaidAmount = invoice.Payments.Sum(x => x.Amount);
+
+                await db.SaveChangesAsync(ct);
+
+                invoice = await db.Invoices
+                    .Include(i => i.Items).ThenInclude(it => it.Service)
+                    .Include(i => i.Payments)
+                    .FirstAsync(i => i.Id == invoice.Id, ct);
             }
 
             return Map(invoice);
@@ -188,5 +211,15 @@ namespace MaxiMed.Application.Invoices
                     Note = p.Note
                 }).ToList()
         };
+        public async Task<Invoice?> GetByIdWithDetailsAsync(long id)
+        {
+            await using var db = await _dbFactory.CreateDbContextAsync();
+
+            return await db.Invoices
+                .Include(x => x.Patient)
+                .Include(x => x.Items).ThenInclude(x => x.Service)
+                .Include(x => x.Payments)
+                .FirstOrDefaultAsync(x => x.Id == id);
+        }
     }
 }

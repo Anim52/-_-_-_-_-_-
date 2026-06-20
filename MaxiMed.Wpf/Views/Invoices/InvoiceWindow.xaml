@@ -1,4 +1,4 @@
-﻿<Window x:Class="MaxiMed.Wpf.Views.Invoices.InvoiceWindow"
+<Window x:Class="MaxiMed.Wpf.Views.Invoices.InvoiceWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -430,10 +430,16 @@
                         <TextBlock Text="История оплат по счёту" Style="{StaticResource S_SectionSub}"/>
                     </StackPanel>
 
-                    <Button DockPanel.Dock="Right"
-                    Content="Удалить выбранный"
-                    Style="{StaticResource S_ButtonDanger}"
-                    Command="{Binding DeletePaymentCommand}"/>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <Button Content="Печать чека"
+        Command="{Binding PrintReceiptCommand}"
+        Height="36"
+        Margin="5"
+                                Style="{StaticResource PrimaryButton}"/>
+                        <Button Content="Удалить выбранный"
+                                Style="{StaticResource S_ButtonDanger}"
+                                Command="{Binding DeletePaymentCommand}"/>
+                    </StackPanel>
                 </DockPanel>
 
                 <!-- Редактирование даты выбранного платежа -->
